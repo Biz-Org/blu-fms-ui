@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fms_helpdesk_ticket_list" model="ir.ui.view">
+        <field name="name">fms.helpdesk.ticket.list</field>
+        <field name="model">fms.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <list string="Complaints &amp; Tickets" class="o_fms_helpdesk_list"
+                  decoration-danger="sla_breached"
+                  decoration-info="state == 'in_progress'"
+                  decoration-success="state in ('resolved', 'closed')"
+                  decoration-muted="state == 'draft'"
+                  default_order="id desc">
+                <field name="name" string="Ticket ID"/>
+                <field name="title" string="Complaint"/>
+                <field name="resident_id"/>
+                <field name="category_id"/>
+                <field name="priority_id" widget="badge"/>
+                <field name="user_id" string="Assigned To" widget="many2one_avatar_user"/>
+                <field name="sla_remaining_label" string="SLA"/>
+                <field name="state" widget="badge"
+                       decoration-info="state in ('new', 'open', 'assigned', 'in_progress')"
+                       decoration-warning="state in ('pending', 'awaiting_resident', 'with_vendor', 'escalated', 'awaiting_verification')"
+                       decoration-success="state in ('resolved', 'closed')"
+                       decoration-danger="state == 'reopened'"/>
+                <field name="sla_breached" column_invisible="True"/>
+                <field name="team_id" optional="hide"/>
+                <field name="property_name" optional="hide"/>
+                <field name="unit_name" optional="hide"/>
+                <field name="subcategory_id" optional="hide"/>
+                <field name="create_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fms_helpdesk_ticket_form" model="ir.ui.view">
+        <field name="name">fms.helpdesk.ticket.form</field>
+        <field name="model">fms.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <form string="Create Complaint" class="o_fms_helpdesk_form">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="new,open,assigned,in_progress,resolved,closed"
+                           invisible="state == 'draft'"/>
+                    <button special="cancel" string="Cancel" invisible="state != 'draft'"/>
+                    <button name="action_save_draft" type="object" string="Save Draft"
+                            class="btn-secondary" invisible="state != 'draft'"/>
+                    <button name="action_submit" type="object" string="Create Complaint"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="title" string="Complaint Title"/>
+                        <h1>
+                            <field name="title" placeholder="Brief summary of the issue..."/>
+                        </h1>
+                        <h2 invisible="not name">
+                            <field name="name" readonly="1"/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Location &amp; Resident Details">
+                            <field name="resident_id"
+                                   domain="[('fms_is_resident', '=', True)]"
+                                   context="{'default_fms_is_resident': True}"
+                                   placeholder="Search resident..."/>
+                            <field name="unit_name" placeholder="Auto-populated"/>
+                            <field name="building_name" placeholder="Tower A - North"/>
+                            <field name="property_name"/>
+                            <field name="floor_name"/>
+                            <field name="location_type"/>
+                            <field name="location_detail"/>
+                            <field name="contact_name"/>
+                            <field name="contact_phone"/>
+                            <field name="contact_email"/>
+                            <field name="preferred_contact_method" widget="radio" options="{'horizontal': True}"/>
+                            <field name="preferred_visit_date"/>
+                            <field name="visit_notes"/>
+                        </group>
+                        <group string="Ticket Preview" col="1">
+                            <field name="preview_ticket_label" string="Ticket ID"/>
+                            <field name="category_id" string="Category"/>
+                            <field name="priority_id"/>
+                            <field name="state" invisible="state == 'draft'"/>
+                            <separator string="SLA Projection"/>
+                            <field name="preview_response_label" string="Expected Response"/>
+                            <field name="preview_resolution_label" string="Expected Resolution"/>
+                            <field name="sla_policy_id" invisible="state == 'draft'"/>
+                            <separator string="Routing Rule"/>
+                            <field name="preview_team_id"/>
+                            <field name="preview_user_id"/>
+                            <field name="preview_assignment_mode" string="Assignment Mode"/>
+                            <field name="preview_rule_id" string="Matched Rule" invisible="not preview_rule_id"/>
+                        </group>
+                    </group>
+                    <group string="Issue Classification">
+                        <group>
+                            <field name="category_id" placeholder="Select Category..."/>
+                            <field name="subcategory_id" placeholder="Select Category First..."/>
+                        </group>
+                        <group>
+                            <field name="priority_id"/>
+                            <field name="channel" invisible="state == 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" colspan="2"
+                               placeholder="Provide detailed information about the issue, location, and any troubleshooting steps already taken..."/>
+                    </group>
+                    <group string="Photos &amp; Attachments">
+                        <field name="attachment_ids" widget="many2many_binary" nolabel="1" colspan="2"/>
+                    </group>
+                    <notebook invisible="state == 'draft'">
+                        <page string="Assignment" name="assignment">
+                            <group>
+                                <field name="team_id"/>
+                                <field name="user_id" widget="many2one_avatar_user"/>
+                                <field name="assigned_date"/>
+                                <field name="routing_rule_id"/>
+                            </group>
+                            <field name="assignment_ids" readonly="1">
+                                <list>
+                                    <field name="assign_date"/>
+                                    <field name="assignment_type"/>
+                                    <field name="team_id"/>
+                                    <field name="user_id"/>
+                                    <field name="assigned_by_id"/>
+                                    <field name="reason"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="SLA" name="sla">
+                            <group>
+                                <field name="sla_status"/>
+                                <field name="sla_remaining_label"/>
+                                <field name="response_deadline"/>
+                                <field name="resolution_deadline"/>
+                                <field name="first_response_date"/>
+                                <field name="resolved_date"/>
+                            </group>
+                        </page>
+                        <page string="History" name="history">
+                            <field name="history_ids" readonly="1">
+                                <list>
+                                    <field name="date"/>
+                                    <field name="user_id"/>
+                                    <field name="action"/>
+                                    <field name="field_label"/>
+                                    <field name="old_value"/>
+                                    <field name="new_value"/>
+                                    <field name="remarks"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_fms_helpdesk_ticket_search" model="ir.ui.view">
+        <field name="name">fms.helpdesk.ticket.search</field>
+        <field name="model">fms.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <search string="Search ticket ID, complaint, resident...">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="resident_id"/>
+                <field name="category_id"/>
+                <field name="user_id"/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_open" string="Open"
+                        domain="[('state', 'in', ('new', 'open', 'assigned'))]"/>
+                <filter name="filter_in_progress" string="In Progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter name="filter_pending" string="Pending"
+                        domain="[('state', 'in', ('pending', 'awaiting_resident', 'with_vendor'))]"/>
+                <filter name="filter_resolved" string="Resolved" domain="[('state', '=', 'resolved')]"/>
+                <filter name="filter_closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <separator/>
+                <filter name="filter_sla_on_track" string="SLA On Track" domain="[('sla_status', '=', 'on_track')]"/>
+                <filter name="filter_sla_at_risk" string="SLA At Risk" domain="[('sla_status', '=', 'at_risk')]"/>
+                <filter name="filter_sla_breached" string="SLA Breached" domain="[('sla_breached', '=', True)]"/>
+                <separator/>
+                <filter name="filter_unassigned" string="Unassigned" domain="[('is_unassigned', '=', True)]"/>
+                <filter name="filter_my" string="My Tickets" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_create_date" string="Created On" date="create_date"/>
+                <filter name="filter_submitted_date" string="Submitted On" date="submitted_date"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_status" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_category" string="Category" context="{'group_by': 'category_id'}"/>
+                    <filter name="group_priority" string="Priority" context="{'group_by': 'priority_id'}"/>
+                    <filter name="group_team" string="Team" context="{'group_by': 'team_id'}"/>
+                    <filter name="group_assignee" string="Assigned To" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_property" string="Property" context="{'group_by': 'property_name'}"/>
+                    <filter name="group_sla" string="SLA" context="{'group_by': 'sla_status'}"/>
+                </group>
+                <searchpanel>
+                    <field name="state" icon="fa-flag" enable_counters="1" select="multi"/>
+                    <field name="category_id" icon="fa-th-large" enable_counters="1" select="multi"/>
+                    <field name="priority_id" icon="fa-bolt" enable_counters="1" select="multi"/>
+                    <field name="sla_status" icon="fa-clock-o" enable_counters="1" select="multi"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_fms_helpdesk_ticket" model="ir.actions.act_window">
+        <field name="name">Complaints</field>
+        <field name="res_model">fms.helpdesk.ticket</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_fms_helpdesk_ticket_search"/>
+        <field name="context">{'default_state': 'draft', 'search_default_filter_open': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a complaint</p>
+            <p>Register a resident complaint or service request. The ticket ID, routing and SLA start when you click Create Complaint.</p>
+        </field>
+    </record>
+</odoo>
