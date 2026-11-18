@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_fms_helpdesk_category_list" model="ir.ui.view">
+        <field name="name">fms.helpdesk.category.list</field>
+        <field name="model">fms.helpdesk.category</field>
+        <field name="arch" type="xml">
+            <list string="Categories" class="o_fms_helpdesk_list">
+                <header>
+                    <button name="action_open_routing_test" type="object" string="Test Routing" display="always"
+                            class="btn-secondary"/>
+                </header>
+                <field name="sequence" widget="handle"/>
+                <field name="name" string="Category"/>
+                <field name="subcategory_summary" string="Subcategories"/>
+                <field name="default_team_id" string="Default Team"/>
+                <field name="routing_rule_summary" string="Routing Rules"/>
+                <field name="active" widget="boolean_toggle" string="Status"/>
+                <field name="write_date" string="Updated"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fms_helpdesk_category_form" model="ir.ui.view">
+        <field name="name">fms.helpdesk.category.form</field>
+        <field name="model">fms.helpdesk.category</field>
+        <field name="arch" type="xml">
+            <form string="Add Complaint Category" class="o_fms_helpdesk_form">
+                <header>
+                    <button name="action_open_routing_test" type="object" string="Test Routing" class="btn-secondary"/>
+                    <button name="action_open_routing_rules" type="object" string="Edit Rules"
+                            invisible="not id"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_routing_rules" type="object" class="oe_stat_button" icon="fa-random"
+                                invisible="not id">
+                            <field name="routing_rule_count" widget="statinfo" string="Routing Rules"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-tags" disabled="1">
+                            <field name="subcategory_count" widget="statinfo" string="Subcategories"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group string="Category Information">
+                        <group>
+                            <field name="name" placeholder="Plumbing"/>
+                            <field name="code"/>
+                            <field name="active" widget="boolean_toggle" string="Status"/>
+                            <field name="auto_routing"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="default_priority_id"/>
+                            <field name="sequence"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" placeholder="Water supply, leakage and plumbing-related complaints."
+                               colspan="2"/>
+                    </group>
+                    <group string="Default Assignment">
+                        <field name="default_team_id" required="1"/>
+                        <field name="default_user_id" domain="[('share', '=', False)]"/>
+                    </group>
+                    <notebook>
+                        <page string="Subcategories" name="subcategories">
+                            <field name="subcategory_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" placeholder="Enter subcategory name"/>
+                                    <field name="default_priority_id"/>
+                                    <field name="active"/>
+                                    <field name="description" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Routing Rules" name="routing_rules">
+                            <field name="routing_rule_ids" context="{'default_category_id': id, 'default_team_id': default_team_id}">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="subcategory_id"/>
+                                    <field name="priority_id"/>
+                                    <field name="team_id"/>
+                                    <field name="user_id"/>
+                                    <field name="sla_policy_id"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_fms_helpdesk_category_search" model="ir.ui.view">
+        <field name="name">fms.helpdesk.category.search</field>
+        <field name="model">fms.helpdesk.category</field>
+        <field name="arch" type="xml">
+            <search string="Search categories">
+                <field name="name"/>
+                <field name="default_team_id"/>
+                <filter name="filter_active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="filter_inactive" string="Inactive" domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="filter_auto_routing" string="Routing Enabled" domain="[('auto_routing', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_team" string="Default Team" context="{'group_by': 'default_team_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_fms_helpdesk_category" model="ir.actions.act_window">
+        <field name="name">Categories</field>
+        <field name="res_model">fms.helpdesk.category</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_fms_helpdesk_category_search"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add a complaint category</p>
+            <p>Categories classify tickets and hold the default team plus subcategories used by routing.</p>
+        </field>
+    </record>
+</odoo>

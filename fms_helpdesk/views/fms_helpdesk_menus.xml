@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem
+        id="menu_fms_helpdesk_root"
+        name="Helpdesk"
+        action="action_fms_helpdesk_app"
+        sequence="90"
+        groups="group_fms_helpdesk_viewer"
+        web_icon="fms_helpdesk,static/description/icon.png"/>
+
+    <menuitem id="menu_fms_helpdesk_dashboard" name="Dashboard" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app" sequence="10" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_complaints" name="Complaints" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_complaints" sequence="20" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_my" name="My Complaints" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_my" sequence="21" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_queue" name="Work Queue" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_queue" sequence="22" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_assign" name="Assignments" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_assign" sequence="23" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_categories" name="Categories" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_categories" sequence="60" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_routing_rules" name="Routing Rules" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_routing" sequence="61" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_sla" name="Priority &amp; SLA" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_sla" sequence="62" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_escalations" name="Escalations" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_escalations" sequence="63" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_resolution" name="Resolution &amp; Closure" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_resolution" sequence="64" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_feedback" name="Feedback" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_feedback" sequence="65" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_reports" name="Reports &amp; Analytics" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_reports" sequence="80" groups="group_fms_helpdesk_viewer"/>
+    <menuitem id="menu_fms_helpdesk_settings" name="Settings" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_app_settings" sequence="90" groups="group_fms_helpdesk_admin"/>
+    <menuitem id="menu_fms_helpdesk_teams" name="Support Teams" parent="menu_fms_helpdesk_root"
+              action="action_fms_helpdesk_team" sequence="95" groups="group_fms_helpdesk_admin"/>
+
+</odoo>

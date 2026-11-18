@@ -1,0 +1,2065 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<t t-name="fms_helpdesk.HelpdeskApp">
+    <div class="o_fms_hd" t-att-class="state.mobileNavOpen ? 'nav-open' : ''" data-hd-build="20261117-responsive">
+        <div class="hd-nav-backdrop" t-on-click="closeMobileNav"/>
+        <aside class="hd-side">
+            <div class="hd-brand">
+                <div class="logo">F</div>
+                <div>
+                    <div class="name">FMS<br/>Helpdesk</div>
+                    <div class="sub">Enterprise Management</div>
+                </div>
+                <button class="hd-side-close icon-btn" type="button" title="Close menu" t-on-click="closeMobileNav">
+                    <i class="fa fa-times"/>
+                </button>
+            </div>
+            <nav class="hd-nav">
+                <t t-foreach="navItems" t-as="item" t-key="item_index">
+                    <div t-if="item.section" class="hd-nav-label"><t t-esc="item.section"/></div>
+                    <button t-else="" type="button" class="hd-nav-item" t-att-class="state.screen === item.id ? 'active' : ''"
+                            t-att-data-screen="item.id" t-on-click="onNav">
+                        <i t-att-class="'fa ' + item.icon"/>
+                        <span t-esc="item.label"/>
+                    </button>
+                </t>
+            </nav>
+            <div class="hd-user">
+                <div class="avatar" t-esc="userInitial"/>
+                <div>
+                    <div t-esc="userName"/>
+                    <div class="meta" t-esc="userLogin"/>
+                </div>
+            </div>
+            <button class="hd-logout" type="button" t-on-click="logout">
+                <i class="fa fa-sign-out"/>
+                <span>Logout</span>
+            </button>
+        </aside>
+        <section class="hd-main">
+            <header class="hd-top">
+                <button class="hd-menu-btn icon-btn" type="button" title="Open menu" t-on-click="toggleMobileNav">
+                    <i class="fa fa-bars"/>
+                </button>
+                <div class="crumb">Helpdesk &gt; <span class="crumb-now"><t t-esc="screenTitle"/></span></div>
+                <div class="search">
+                    <i class="fa fa-search"/>
+                    <input type="text" t-att-placeholder="headerSearchPlaceholder" t-model="state.globalSearch" t-on-change="onHeaderSearch"/>
+                </div>
+                <div class="hd-top-actions">
+                    <button class="icon-btn" type="button" title="Notifications are delivered in ticket chatter and activities" t-on-click="onNotificationsHint"><i class="fa fa-bell-o"/></button>
+                    <button class="icon-btn" type="button" t-on-click="() => this.setScreen('settings')"><i class="fa fa-cog"/></button>
+                    <t t-if="state.screen === 'routing'">
+                        <button class="hd-btn ghost hd-top-extra" type="button" t-on-click="() => this.openModal('routingTest')">Test Routing</button>
+                        <button class="hd-btn primary hd-create-top" type="button" t-on-click="() => this.openModal('routing')">+ Create Rule</button>
+                    </t>
+                    <t t-else="">
+                        <button class="hd-btn primary hd-create-top" type="button" t-on-click="() => this.setScreen('create')">+ Create Ticket</button>
+                        <div class="avatar hd-top-avatar" t-esc="userInitial"/>
+                    </t>
+                </div>
+            </header>
+            <div class="hd-body">
+                <div t-if="state.error" class="hd-error" t-esc="state.error"/>
+                <div t-if="state.loading" class="hd-empty">Loading…</div>
+                <t t-elif="state.screen === 'dashboard'" t-call="fms_helpdesk.Dashboard"/>
+                <t t-elif="state.screen === 'complaints'" t-call="fms_helpdesk.Complaints"/>
+                <t t-elif="state.screen === 'create'" t-call="fms_helpdesk.Create"/>
+                <t t-elif="state.screen === 'my_complaints'" t-call="fms_helpdesk.MyComplaints"/>
+                <t t-elif="state.screen === 'work_queue'" t-call="fms_helpdesk.WorkQueue"/>
+                <t t-elif="state.screen === 'assignments'" t-call="fms_helpdesk.Assignments"/>
+                <t t-elif="state.screen === 'teams'" t-call="fms_helpdesk.Teams"/>
+                <t t-elif="state.screen === 'categories'" t-call="fms_helpdesk.Categories"/>
+                <t t-elif="state.screen === 'routing'" t-call="fms_helpdesk.Routing"/>
+                <t t-elif="state.screen === 'sla'" t-call="fms_helpdesk.Sla"/>
+                <t t-elif="state.screen === 'escalations'" t-call="fms_helpdesk.Escalations"/>
+                <t t-elif="state.screen === 'resolution'" t-call="fms_helpdesk.Resolution"/>
+                <t t-elif="state.screen === 'feedback'" t-call="fms_helpdesk.Feedback"/>
+                <t t-elif="state.screen === 'reports'" t-call="fms_helpdesk.Reports"/>
+                <t t-elif="state.screen === 'ticket'" t-call="fms_helpdesk.Ticket"/>
+                <t t-elif="state.screen === 'settings'" t-call="fms_helpdesk.Settings"/>
+            </div>
+        </section>
+        <t t-if="state.modal" t-call="fms_helpdesk.Modal"/>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Dashboard">
+    <div class="hd-page hd-dash">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Helpdesk / Dashboard</h1>
+                <p class="hd-sub">Live complaint volume, SLA health and recent activity from the database.</p>
+            </div>
+            <div class="hd-head-actions">
+                <button class="hd-btn" type="button" t-on-click="() => this.setScreen('complaints')">Complaints</button>
+                <button class="hd-btn" type="button" t-on-click="() => this.setScreen('work_queue')">Work Queue</button>
+                <button class="hd-btn" type="button" t-on-click="() => this.openWorkQueueTab('breached')">SLA Breaches</button>
+                <button class="hd-btn" type="button" t-on-click="() => this.setScreen('escalations')">Escalations</button>
+                <button class="hd-btn" type="button" t-on-click="() => this.setScreen('reports')">Reports</button>
+                <button class="hd-btn primary" type="button" t-on-click="() => this.setScreen('create')">+ Create Ticket</button>
+            </div>
+        </div>
+        <div class="hd-kpis hd-dash-kpis">
+            <div class="hd-kpi accent"><div class="label">Total Complaints</div><div class="value" t-esc="kpi('total')"/></div>
+            <div class="hd-kpi"><div class="label">Open</div><div class="value" t-esc="kpi('open')"/></div>
+            <div class="hd-kpi"><div class="label">In Progress</div><div class="value" t-esc="kpi('in_progress')"/></div>
+            <div class="hd-kpi"><div class="label">Unassigned</div><div class="value" t-esc="kpi('unassigned')"/></div>
+            <div class="hd-kpi warn"><div class="label">SLA Breached</div><div class="value" t-esc="kpi('breached')"/></div>
+            <div class="hd-kpi ok"><div class="label">Resolved</div><div class="value" t-esc="kpi('resolved')"/></div>
+        </div>
+        <div class="hd-grid-2">
+            <div class="hd-card">
+                <h3>Complaint Trend (7 days)</h3>
+                <div class="hd-bars">
+                    <t t-foreach="state.data.trend || []" t-as="bar" t-key="bar.label">
+                        <div class="hd-bar-wrap">
+                            <div class="hd-bar" t-att-style="'height:' + barHeight(bar.count) + '%'">
+                                <span t-esc="bar.count"/>
+                            </div>
+                            <div class="bar-label" t-esc="bar.label"/>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            <div class="hd-card">
+                <h3>Complaint Status</h3>
+                <t t-foreach="state.data.status || []" t-as="row" t-key="row.key">
+                    <div class="hd-hrow">
+                        <span style="width:90px" t-esc="row.label"/>
+                        <div class="hd-track"><div class="hd-fill" t-att-class="'fill-' + row.key" t-att-style="'width:' + pct(row.count, kpi('total')) + '%'"/></div>
+                        <b t-esc="row.count"/>
+                    </div>
+                </t>
+            </div>
+            <div class="hd-card">
+                <h3>Priority Overview</h3>
+                <div class="hd-prio">
+                    <t t-foreach="state.data.priorities || []" t-as="p" t-key="p.code + p.name">
+                        <div><b t-att-class="'p-' + p.code" t-esc="p.count"/><span t-esc="p.name"/></div>
+                    </t>
+                    <div t-if="!(state.data.priorities &amp;&amp; state.data.priorities.length)" class="muted">No priority master data yet.</div>
+                </div>
+            </div>
+            <div class="hd-card">
+                <h3>SLA Overview <span class="hd-badge ok hd-right">Compliance: <t t-esc="state.data.sla &amp;&amp; state.data.sla.compliance || 0"/>%</span></h3>
+                <div class="hd-row" style="gap:24px;flex-wrap:wrap">
+                    <span>● <t t-esc="state.data.sla &amp;&amp; state.data.sla.on_track"/> On Track</span>
+                    <span>● <t t-esc="state.data.sla &amp;&amp; state.data.sla.at_risk"/> At Risk</span>
+                    <span>● <t t-esc="state.data.sla &amp;&amp; state.data.sla.breached"/> Breached</span>
+                    <span>● <t t-esc="kpi('high')"/> High / Critical open</span>
+                    <span>● <t t-esc="kpi('escalated')"/> Escalated</span>
+                </div>
+                <h3 style="margin-top:16px">Team Workload</h3>
+                <t t-foreach="state.data.teams || []" t-as="tm" t-key="tm.id">
+                    <div class="kv"><span t-esc="tm.name"/><b t-esc="tm.open + ' open'"/></div>
+                </t>
+                <div t-if="!(state.data.teams &amp;&amp; state.data.teams.length)" class="muted">No support teams yet.</div>
+            </div>
+        </div>
+        <div class="hd-grid-2">
+            <div class="hd-card">
+                <div class="hd-row"><h3>Recent Complaints</h3><button class="hd-btn link hd-right" type="button" t-on-click="() => this.setScreen('complaints')">View All</button></div>
+                <t t-call="fms_helpdesk.TicketTable">
+                    <t t-set="rows" t-value="state.data.recent || []"/>
+                    <t t-set="columns" t-value="'recent'"/>
+                </t>
+            </div>
+            <div class="hd-card">
+                <h3>Recent Activity</h3>
+                <t t-foreach="state.data.activity || []" t-as="a" t-key="a.id">
+                    <div class="kv activity-row">
+                        <span>
+                            <b class="ticket-id clickable" t-att-data-id="a.ticket_id" t-on-click="onOpenTicket" t-esc="a.ticket"/>
+                            · <t t-esc="a.action"/> · <t t-esc="a.user"/>
+                            <div class="muted" t-esc="a.remarks"/>
+                        </span>
+                        <span class="muted" t-esc="a.when"/>
+                    </div>
+                </t>
+                <div t-if="!(state.data.activity &amp;&amp; state.data.activity.length)" class="hd-empty">No activity yet.</div>
+            </div>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Complaints">
+    <div class="hd-page hd-complaints">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Complaints &amp; Tickets</h1>
+                <p class="hd-sub">View and manage all resident complaints and service requests.</p>
+            </div>
+            <div class="hd-head-selects">
+                <select class="hd-select pill" t-model="state.filters.property" t-on-change="reload">
+                    <option value="">All Properties</option>
+                    <t t-foreach="state.data.properties || []" t-as="prop" t-key="prop">
+                        <option t-att-value="prop" t-esc="prop"/>
+                    </t>
+                </select>
+                <select class="hd-select pill" t-model="state.datePreset" t-on-change="reload">
+                    <option value="all">All Time</option>
+                    <option value="month">This Month</option>
+                    <option value="week">This Week</option>
+                </select>
+            </div>
+        </div>
+        <div class="hd-kpis hd-kpis-4">
+            <div class="hd-kpi accent">
+                <div class="label">Total Complaints <span class="kpi-ico"><i class="fa fa-file-text-o"/></span></div>
+                <div class="value" t-esc="kpi('total')"/>
+            </div>
+            <div class="hd-kpi red">
+                <div class="label">Open <span class="kpi-ico ico-red"><i class="fa fa-envelope-o"/></span></div>
+                <div class="value" t-esc="kpi('open')"/>
+            </div>
+            <div class="hd-kpi blue">
+                <div class="label">In Progress <span class="kpi-ico ico-blue"><i class="fa fa-refresh"/></span></div>
+                <div class="value" t-esc="kpi('in_progress')"/>
+            </div>
+            <div class="hd-kpi warn">
+                <div class="label">SLA Breached <span class="kpi-ico ico-red"><i class="fa fa-clock-o"/></span></div>
+                <div class="value danger" t-esc="kpi('breached')"/>
+            </div>
+        </div>
+        <div class="hd-filterbar">
+            <div class="hd-search-pill">
+                <i class="fa fa-search"/>
+                <input placeholder="Search ticket ID, complaint, resident..." t-model="state.filters.search" t-on-change="reload"/>
+            </div>
+            <select class="hd-select pill" t-model="state.filters.state" t-on-change="reload">
+                <option value="">Status</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.category_id" t-on-change="reload">
+                <option value="">Category</option>
+                <t t-foreach="masters.categories" t-as="c" t-key="c.id"><option t-att-value="c.id" t-esc="c.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.priority_id" t-on-change="reload">
+                <option value="">Priority</option>
+                <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.sla_status" t-on-change="reload">
+                <option value="">SLA</option>
+                <option value="on_track">On Track</option>
+                <option value="at_risk">At Risk</option>
+                <option value="breached">Breached</option>
+            </select>
+        </div>
+        <div class="hd-list-toolbar">
+            <div class="count">
+                <t t-esc="state.data.count || 0"/> Complaints
+                <span t-if="state.data.truncated" class="muted"> (showing first <t t-esc="(state.data.tickets || []).length"/>)</span>
+            </div>
+            <div class="actions">
+                <button class="hd-btn ghost" type="button" t-on-click="exportComplaints"><i class="fa fa-download"/> Export</button>
+                <button class="hd-btn primary" type="button" t-on-click="() => this.setScreen('create')">+ Create Complaint</button>
+            </div>
+        </div>
+        <div class="hd-card hd-table-card">
+            <div class="table-title">All Complaints</div>
+            <table class="hd-table hd-complaints-table">
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Complaint</th>
+                        <th>Resident</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Assigned To</th>
+                        <th>SLA</th>
+                        <th>Status</th>
+                        <th t-if="isAdmin">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(state.data.tickets &amp;&amp; state.data.tickets.length)">
+                        <td t-att-colspan="isAdmin ? 9 : 8" class="hd-empty">No complaints yet. Create one to see live records here.</td>
+                    </tr>
+                    <t t-foreach="state.data.tickets || []" t-as="t" t-key="t.id">
+                        <tr t-att-class="(t.sla_breached ? 'row-breach ' : '') + 'clickable'" t-att-data-id="t.id" t-on-click="onOpenTicket">
+                            <td class="ticket-id">
+                                <span t-esc="t.ticket_prefix"/><span t-esc="t.ticket_number"/>
+                            </td>
+                            <td class="complaint-title" t-esc="t.title"/>
+                            <td t-esc="t.resident"/>
+                            <td t-esc="t.category"/>
+                            <td>
+                                <span class="pri" t-att-class="'pr-' + t.priority_code">
+                                    <t t-if="t.priority_code === 'critical'">▲ </t>
+                                    <t t-elif="t.priority_code === 'high'">↑ </t>
+                                    <t t-elif="t.priority_code === 'low'">↓ </t>
+                                    <t t-else="">— </t>
+                                    <t t-esc="t.priority"/>
+                                </span>
+                            </td>
+                            <td t-esc="t.assignee"/>
+                            <td>
+                                <span class="sla-cell" t-att-class="'sla-' + t.sla_status">
+                                    <t t-if="t.sla_breached">Breached</t>
+                                    <t t-else="" t-esc="t.sla || 'On Track'"/>
+                                </span>
+                            </td>
+                            <td><span class="hd-badge" t-att-class="'st-' + t.state" t-esc="t.state_label"/></td>
+                            <td t-if="isAdmin" t-on-click.stop="() => {}">
+                                <button class="hd-btn danger" type="button" t-att-data-id="t.id" t-on-click="deleteTicket">Delete</button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Create">
+    <h1 class="hd-title">Create Complaint</h1>
+    <p class="hd-sub">Register a new complaint or service request</p>
+    <div class="hd-form-grid">
+        <div>
+            <div class="hd-section">
+                <h3><i class="fa fa-map-marker"/> Location &amp; Resident Details</h3>
+                <div class="hd-fields">
+                    <div class="hd-field suggest">
+                        <label>Resident / Reporter *</label>
+                        <input placeholder="Type reporter name (e.g. Resident A) or search..." t-model="state.form.resident_query" t-on-input="onResidentQuery"/>
+                        <div t-if="state.residents.length" class="suggest-list">
+                            <t t-foreach="state.residents" t-as="r" t-key="r.id">
+                                <button type="button" t-att-data-id="r.id" t-on-click="pickResident"><t t-esc="r.name"/> — <t t-esc="r.unit"/></button>
+                            </t>
+                        </div>
+                        <div class="muted" style="margin-top:4px">Type a name here — it is saved as Contact Name even if no resident match is found.</div>
+                    </div>
+                    <div class="hd-field"><label>Contact Name *</label><input t-model="state.form.contact_name" placeholder="Auto-filled from reporter name, or type here"/></div>
+                    <div class="hd-field"><label>Apartment / Unit</label><input t-model="state.form.unit_name" placeholder="Auto-populated"/></div>
+                    <div class="hd-field"><label>Building / Tower</label><input t-model="state.form.building_name"/></div>
+                    <div class="hd-field">
+                        <label>Specific Location</label>
+                        <select t-model="state.form.location_type">
+                            <option value="apartment_inside">Apartment Inside</option>
+                            <option value="common_area">Common Area</option>
+                            <option value="lift_lobby">Lift / Lobby</option>
+                            <option value="parking">Parking</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="hd-section">
+                <h3><i class="fa fa-tags"/> Issue Classification</h3>
+                <div class="hd-fields">
+                    <div class="hd-field">
+                        <label>Category</label>
+                        <select t-model="state.form.category_id" t-on-change="onCreateChange">
+                            <option value="">Select Category...</option>
+                            <t t-foreach="masters.categories" t-as="c" t-key="c.id"><option t-att-value="c.id" t-esc="c.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field">
+                        <label>Subcategory</label>
+                        <select t-model="state.form.subcategory_id" t-on-change="onCreateChange">
+                            <option value="">Select Category First...</option>
+                            <t t-foreach="currentSubs" t-as="s" t-key="s.id"><option t-att-value="s.id" t-esc="s.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field">
+                        <label>Priority</label>
+                        <div class="seg">
+                            <t t-foreach="masters.priorities" t-as="p" t-key="p.id">
+                                <button type="button" t-att-class="isPriority(p.id) ? 'on' : ''"
+                                        t-att-data-id="p.id" t-on-click="pickPriority" t-esc="p.name"/>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="hd-field">
+                        <label>Preferred Contact Method</label>
+                        <div class="radio-row">
+                            <label><input type="radio" name="pcm" value="phone" t-model="state.form.preferred_contact_method"/> Phone</label>
+                            <label><input type="radio" name="pcm" value="app" t-model="state.form.preferred_contact_method"/> App</label>
+                            <label><input type="radio" name="pcm" value="email" t-model="state.form.preferred_contact_method"/> Email</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hd-section">
+                <h3><i class="fa fa-align-left"/> Description</h3>
+                <div class="hd-fields">
+                    <div class="hd-field full"><label>Subject</label><input placeholder="Brief summary of the issue..." t-model="state.form.title"/></div>
+                    <div class="hd-field full"><label>Detailed Description</label>
+                        <textarea placeholder="Provide detailed information about the issue, location, and any troubleshooting steps already taken..." t-model="state.form.description"/>
+                    </div>
+                </div>
+                <h3 class="hd-attach-head"><i class="fa fa-paperclip"/> Photos &amp; Attachments</h3>
+                <label class="hd-drop">
+                    <input type="file" class="hd-file-input" multiple="multiple" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.mp4" t-on-change="onCreateFiles"/>
+                    <i class="fa fa-cloud-upload"/>
+                    <span>Click to add photos or documents</span>
+                </label>
+                <div t-if="state.form.attachments.length" class="hd-file-chips">
+                    <t t-foreach="state.form.attachments" t-as="file" t-key="file_index">
+                        <span class="hd-chip">
+                            <t t-esc="file.name"/>
+                            <button type="button" t-att-data-index="file_index" t-on-click="removeCreateFile">×</button>
+                        </span>
+                    </t>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="preview-card">
+                <h4>Ticket Preview <span class="hd-badge st-new">NEW</span></h4>
+                <div class="kv">Ticket ID <b t-esc="state.preview.ticket_label || 'TKT-AUTO'"/></div>
+                <div class="kv">Category <b t-esc="state.preview.category || '--'"/></div>
+                <div class="kv">Priority <b t-esc="state.preview.priority || 'Medium'"/></div>
+            </div>
+            <div class="preview-card">
+                <h4>SLA Projection</h4>
+                <div class="kv">Expected Response <b t-esc="state.preview.response || '-- min'"/></div>
+                <div class="kv">Expected Resolution <b t-esc="state.preview.resolution || '-- hrs'"/></div>
+                <div class="hd-empty" style="padding:12px">Timers will start automatically upon submission.</div>
+            </div>
+            <div class="preview-card">
+                <h4>Routing Rule</h4>
+                <div class="kv">Target Department <b t-esc="state.preview.team || 'Pending Category Selection'"/></div>
+                <div class="kv">Assignment Mode <b t-esc="state.preview.mode || 'Automatic (Round Robin)'"/></div>
+            </div>
+        </div>
+    </div>
+    <div class="hd-footer">
+        <button class="hd-btn cancel" type="button" t-on-click="() => this.setScreen('complaints')">Cancel</button>
+        <button class="hd-btn" type="button" t-on-click="() => this.saveTicket(false)">Save Draft</button>
+        <button class="hd-btn primary" type="button" t-on-click="() => this.saveTicket(true)">Create Complaint</button>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.MyComplaints">
+    <div class="hd-page hd-my-complaints">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">My Complaints</h1>
+                <p class="hd-sub">Track the complaints and service requests submitted by you.</p>
+            </div>
+            <button class="hd-btn primary" type="button" t-on-click="() => this.setScreen('create')">+ Create Complaint</button>
+        </div>
+        <div class="hd-kpis hd-kpis-4">
+            <div class="hd-kpi">
+                <div class="label">My Complaints <span class="kpi-ico"><i class="fa fa-list-alt"/></span></div>
+                <div class="value" t-esc="kpi('total')"/>
+            </div>
+            <div class="hd-kpi">
+                <div class="label">Open <span class="kpi-ico ico-orange"><i class="fa fa-clock-o"/></span></div>
+                <div class="value" t-esc="kpi('open')"/>
+            </div>
+            <div class="hd-kpi">
+                <div class="label">In Progress <span class="kpi-ico ico-blue"><i class="fa fa-refresh"/></span></div>
+                <div class="value" t-esc="kpi('in_progress')"/>
+            </div>
+            <div class="hd-kpi">
+                <div class="label">Resolved <span class="kpi-ico ico-green"><i class="fa fa-check-circle"/></span></div>
+                <div class="value" t-esc="kpi('resolved')"/>
+            </div>
+        </div>
+        <div class="hd-filterbar hd-my-filters">
+            <div class="hd-search-pill">
+                <i class="fa fa-search"/>
+                <input placeholder="Search my complaints..." t-model="state.filters.search" t-on-change="onFilterChange"/>
+            </div>
+            <select class="hd-select pill" t-model="state.filters.state" t-on-change="onFilterChange">
+                <option value="">Status: All</option>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.category_id" t-on-change="onFilterChange">
+                <option value="">Category: All</option>
+                <t t-foreach="masters.categories" t-as="c" t-key="c.id"><option t-att-value="c.id" t-esc="c.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.priority_id" t-on-change="onFilterChange">
+                <option value="">Priority: All</option>
+                <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.datePreset" t-on-change="onFilterChange">
+                <option value="all">Date: All Time</option>
+                <option value="month">This Month</option>
+                <option value="week">This Week</option>
+            </select>
+            <button class="hd-btn link" type="button" t-on-click="resetFilters">Reset Filters</button>
+        </div>
+        <div class="hd-reporter">
+            <i class="fa fa-user"/> Showing complaints submitted by: <b t-esc="state.data.reporter || userName"/>
+            <t t-if="state.data.apartment"> | Apartment: <t t-esc="state.data.apartment"/></t>
+        </div>
+        <div class="hd-card hd-table-card">
+            <div class="table-title">Complaint List</div>
+            <table class="hd-table hd-complaints-table hd-my-table">
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Complaint</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Created</th>
+                        <th>Assigned To</th>
+                        <th>SLA</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(pagedTickets &amp;&amp; pagedTickets.length)">
+                        <td colspan="9" class="hd-empty">No complaints submitted by you yet.</td>
+                    </tr>
+                    <t t-foreach="pagedTickets" t-as="t" t-key="t.id">
+                        <tr class="clickable" t-att-data-id="t.id" t-on-click="onOpenTicket">
+                            <td class="ticket-id">
+                                <span t-esc="t.ticket_prefix"/><span t-esc="t.ticket_number"/>
+                            </td>
+                            <td class="complaint-title" t-esc="t.title"/>
+                            <td t-esc="t.category"/>
+                            <td><span class="hd-badge" t-att-class="'pr-' + t.priority_code" t-esc="t.priority"/></td>
+                            <td t-esc="t.created"/>
+                            <td t-esc="t.assignee"/>
+                            <td>
+                                <span class="sla-cell" t-att-class="'sla-' + slaClass(t)">
+                                    <t t-esc="slaDisplay(t)"/>
+                                </span>
+                            </td>
+                            <td><span class="hd-badge" t-att-class="'st-' + t.state" t-esc="t.state_label"/></td>
+                            <td t-on-click.stop="() => {}">
+                                <button class="hd-kebab" type="button" t-att-data-id="t.id" t-on-click="onOpenTicket">
+                                    <i class="fa fa-ellipsis-v"/>
+                                </button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <div class="hd-pager">
+                <span class="pg-info">Showing <t t-esc="pageInfo.start"/>-<t t-esc="pageInfo.end"/> of <t t-esc="pageInfo.total"/> complaints</span>
+                <div class="pg-btns">
+                    <button type="button" t-on-click="prevPage">Previous</button>
+                    <t t-foreach="pageNumbers" t-as="n" t-key="n">
+                        <button type="button" t-att-class="isPage(n) ? 'on' : ''" t-att-data-page="n" t-on-click="goPage" t-esc="n"/>
+                    </t>
+                    <button type="button" t-on-click="nextPage">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.WorkQueue">
+    <h1 class="hd-title">Work Queue</h1>
+    <p class="hd-sub">Manage assigned, unassigned and pending complaint work</p>
+    <div class="hd-kpis">
+        <div class="hd-kpi"><div class="label">My Open Tickets</div><div class="value" t-esc="kpi('mine')"/></div>
+        <div class="hd-kpi"><div class="label">Unassigned</div><div class="value" t-esc="kpi('unassigned')"/></div>
+        <div class="hd-kpi"><div class="label">Due Soon</div><div class="value" t-esc="kpi('due')"/></div>
+        <div class="hd-kpi warn"><div class="label">SLA Breached</div><div class="value" t-esc="kpi('breached')"/></div>
+        <div class="hd-kpi"><div class="label">High Priority</div><div class="value" t-esc="kpi('high')"/></div>
+    </div>
+    <div class="hd-tabs">
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'mine' ? 'active' : ''" t-on-click="() => this.setTab('mine')">My Queue</button>
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'unassigned' ? 'active' : ''" t-on-click="() => this.setTab('unassigned')">Unassigned</button>
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'team' ? 'active' : ''" t-on-click="() => this.setTab('team')">Team Queue</button>
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'due' ? 'active' : ''" t-on-click="() => this.setTab('due')">Due Soon</button>
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'breached' ? 'active' : ''" t-on-click="() => this.setTab('breached')">SLA Breached</button>
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'all' ? 'active' : ''" t-on-click="() => this.setTab('all')">All Open</button>
+    </div>
+    <t t-call="fms_helpdesk.TicketTable"><t t-set="rows" t-value="state.data.tickets || []"/><t t-set="showAssign" t-value="true"/></t>
+</t>
+
+<t t-name="fms_helpdesk.Assignments">
+    <div class="hd-row">
+        <div>
+            <h1 class="hd-title">Assignment Management</h1>
+            <p class="hd-sub">Assign unassigned complaints to the right support team and staff member.</p>
+        </div>
+        <button class="hd-btn primary hd-right" type="button" t-on-click="openAssignModal">+ Assign Ticket</button>
+    </div>
+    <div class="hd-kpis">
+        <div class="hd-kpi"><div class="label">Unassigned</div><div class="value" t-esc="kpi('unassigned')"/></div>
+        <div class="hd-kpi"><div class="label">Assigned Today</div><div class="value" t-esc="kpi('assigned_today')"/></div>
+        <div class="hd-kpi"><div class="label">Pending</div><div class="value" t-esc="kpi('pending')"/></div>
+        <div class="hd-kpi"><div class="label">Reassigned Today</div><div class="value" t-esc="kpi('reassigned_today')"/></div>
+    </div>
+    <div class="hd-tabs">
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'unassigned' ? 'active' : ''" t-on-click="() => this.setTab('unassigned')">Unassigned</button>
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'mine' ? 'active' : ''" t-on-click="() => this.setTab('mine')">My Assignments</button>
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'team' ? 'active' : ''" t-on-click="() => this.setTab('team')">Team Assignments</button>
+        <button type="button" class="hd-tab" t-att-class="state.tab === 'all' ? 'active' : ''" t-on-click="() => this.setTab('all')">All Assignments</button>
+    </div>
+    <table class="hd-table">
+        <thead><tr><th>Priority</th><th>Ticket ID</th><th>Complaint</th><th>Resident</th><th>Category</th><th>SLA</th><th>Created</th><th>Action</th></tr></thead>
+        <tbody>
+            <tr t-if="!(state.data.tickets &amp;&amp; state.data.tickets.length)">
+                <td colspan="8" class="hd-empty">
+                    No unassigned tickets. Routing already assigned your ticket (see Assignment History).
+                    Open the <b>All Assignments</b> or <b>My Assignments</b> tab, or use + Assign Ticket to reassign.
+                </td>
+            </tr>
+            <t t-foreach="state.data.tickets || []" t-as="t" t-key="t.id">
+                <tr>
+                    <td><span class="hd-badge" t-att-class="'pr-' + t.priority_code" t-esc="t.priority"/></td>
+                    <td class="ticket-id clickable" t-att-data-id="t.id" t-on-click="onOpenTicket" t-esc="t.name"/>
+                    <td t-esc="t.title"/>
+                    <td t-esc="t.resident"/>
+                    <td t-esc="t.category"/>
+                    <td t-esc="t.sla"/>
+                    <td t-esc="t.created"/>
+                    <td><button class="hd-btn primary" type="button" t-att-data-id="t.id" t-on-click="openAssignModal">Assign</button></td>
+                </tr>
+            </t>
+        </tbody>
+    </table>
+    <div class="hd-card" style="margin-top:16px">
+        <h3>Assignment History</h3>
+        <table class="hd-table">
+            <thead><tr><th>Ticket</th><th>Complaint</th><th>Team</th><th>Assignee</th><th>Type</th><th>When</th></tr></thead>
+            <tbody>
+                <tr t-if="!(state.data.history &amp;&amp; state.data.history.length)">
+                    <td colspan="6" class="hd-empty">No assignment history yet.</td>
+                </tr>
+                <t t-foreach="state.data.history || []" t-as="h" t-key="h.id">
+                    <tr>
+                        <td class="ticket-id" t-esc="h.ticket"/>
+                        <td t-esc="h.title"/>
+                        <td t-esc="h.team"/>
+                        <td t-esc="h.user"/>
+                        <td t-esc="h.type"/>
+                        <td t-esc="h.date"/>
+                    </tr>
+                </t>
+            </tbody>
+        </table>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Teams">
+    <div class="hd-page">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Support Teams</h1>
+                <p class="hd-sub">Create teams that receive routed complaints and own the work queue.</p>
+            </div>
+            <button class="hd-btn primary" type="button" t-on-click="() => this.openModal('team')">+ Add Team</button>
+        </div>
+        <table class="hd-table">
+            <thead>
+                <tr>
+                    <th>Team</th>
+                    <th>Leader</th>
+                    <th>Members</th>
+                    <th>Assignment</th>
+                    <th>Open Tickets</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr t-if="!(state.data.teams &amp;&amp; state.data.teams.length)">
+                    <td colspan="7" class="hd-empty">No support teams yet. Add Plumbing Team (or any team) to continue testing.</td>
+                </tr>
+                <t t-foreach="state.data.teams || []" t-as="tm" t-key="tm.id">
+                    <tr>
+                        <td><b t-esc="tm.name"/></td>
+                        <td t-esc="tm.leader"/>
+                        <td t-esc="tm.members"/>
+                        <td t-esc="tm.assignment_method_label"/>
+                        <td t-esc="tm.open_ticket_count"/>
+                        <td><span class="hd-badge" t-esc="tm.active ? 'Active' : 'Inactive'"/></td>
+                        <td>
+                            <button class="hd-btn" type="button" t-att-data-id="tm.id" t-on-click="editTeam">Edit</button>
+                            <button t-if="isAdmin" class="hd-btn danger" type="button" t-att-data-id="tm.id" t-on-click="deleteTeam">Delete</button>
+                        </td>
+                    </tr>
+                </t>
+            </tbody>
+        </table>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Categories">
+    <div class="hd-page hd-categories">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Categories &amp; Routing Rules</h1>
+                <p class="hd-sub">Configure complaint categories and automatically route tickets to the right support team.</p>
+            </div>
+            <div class="hd-head-actions">
+                <button class="hd-test-btn" type="button" t-on-click="() => this.openModal('routingTest')">
+                    <i class="fa fa-repeat"/>
+                    <span>Test Routing</span>
+                </button>
+                <button class="hd-btn primary hd-add-cat" type="button" t-on-click="() => this.openModal('category')">+ Add Category</button>
+            </div>
+        </div>
+        <div class="hd-tabs">
+            <button type="button" class="hd-tab active">Categories (Active)</button>
+            <button type="button" class="hd-tab" t-on-click="() => this.setScreen('routing')">Routing Rules</button>
+        </div>
+        <div class="hd-statbar">
+            <span><b t-esc="kpi('active')"/> Active Categories</span>
+            <span class="dot"/>
+            <span><b t-esc="kpi('subcategories')"/> Subcategories</span>
+            <span class="dot"/>
+            <span><b t-esc="kpi('rules')"/> Routing Rules</span>
+            <span class="dot"/>
+            <span><b t-esc="kpi('inactive')"/> Inactive</span>
+        </div>
+        <div class="hd-filterbar hd-cat-filters">
+            <div class="hd-search-pill">
+                <i class="fa fa-search"/>
+                <input placeholder="Search categories..." t-model="state.filters.search" t-on-change="onFilterChange"/>
+            </div>
+            <select class="hd-select pill" t-model="state.filters.status" t-on-change="onFilterChange">
+                <option value="">Status: All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <button class="hd-btn" type="button" t-on-click="resetFilters">Reset</button>
+        </div>
+        <div class="hd-card hd-table-card">
+            <table class="hd-table hd-cat-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Subcategories</th>
+                        <th>Default Team</th>
+                        <th>Routing Rules</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(state.data.categories &amp;&amp; state.data.categories.length)">
+                        <td colspan="7" class="hd-empty">No categories yet. Add one to start routing.</td>
+                    </tr>
+                    <t t-foreach="state.data.categories || []" t-as="c" t-key="c.id">
+                        <tr class="clickable" t-att-class="isSelectedCategory(c.id) ? 'selected' : ''" t-att-data-id="c.id" t-on-click="selectCategory">
+                            <td class="ticket-id" t-esc="c.name"/>
+                            <td t-esc="c.subcategory_count + ' subcat'"/>
+                            <td t-esc="c.default_team"/>
+                            <td t-esc="c.routing_rule_count + ' rules'"/>
+                            <td><span class="hd-badge" t-att-class="c.active ? 'active' : ''" t-esc="catStatusLabel(c.active)"/></td>
+                            <td t-esc="c.updated"/>
+                            <td class="cat-actions" t-on-click.stop="() => {}">
+                                <button class="hd-icon-action" type="button" t-att-data-id="c.id" t-on-click="editCategory" title="Edit"><i class="fa fa-pencil"/></button>
+                                <button t-if="isAdmin" class="hd-icon-action danger" type="button" t-att-data-id="c.id" t-on-click="deleteCategory" title="Delete"><i class="fa fa-trash"/></button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+        <div t-if="selectedCategory" class="hd-card cat-detail">
+            <div>
+                <h3>
+                    <t t-esc="selectedCategory.name"/>
+                    <span class="hd-badge" t-att-class="selectedCategory.active ? 'active' : ''" t-esc="catStatusLabel(selectedCategory.active)"/>
+                </h3>
+                <p class="cat-desc" t-esc="selectedCategory.description || 'No description'"/>
+                <div class="cat-team">
+                    <div class="muted">Default Team</div>
+                    <div><i class="fa fa-users"/> <b t-esc="selectedCategory.default_team || 'Not set'"/></div>
+                </div>
+            </div>
+            <div>
+                <div class="muted">Subcategories</div>
+                <div class="sub-wrap">
+                    <t t-foreach="selectedCategory.subcategories || []" t-as="s" t-key="s"><span class="sub-chip" t-esc="s"/></t>
+                    <span t-if="!(selectedCategory.subcategories &amp;&amp; selectedCategory.subcategories.length)" class="muted">None</span>
+                </div>
+                <div class="hd-row cat-rules-head">
+                    <b>Routing Rules (<t t-esc="selectedRuleCount"/>)</b>
+                    <button class="hd-btn link hd-right" type="button" t-on-click="() => this.setScreen('routing')">Edit Rules</button>
+                </div>
+                <t t-foreach="selectedCategory.rules || []" t-as="r" t-key="r.id">
+                    <div class="cat-rule">
+                        <span t-esc="ruleLine(r)"/>
+                        <span t-if="r.sla" class="sla-pill" t-esc="r.sla"/>
+                    </div>
+                </t>
+            </div>
+        </div>
+        <div t-else="" class="hd-card cat-detail hd-empty">Select a category in the list, or click + Add Category.</div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Routing">
+    <div class="hd-page hd-routing">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Routing Rules</h1>
+                <p class="hd-sub">Automatically route new complaints to the right support team and staff member.</p>
+            </div>
+        </div>
+        <div class="hd-statbar hd-route-stats">
+            <span class="st-item"><span class="st-dot purple"/><b t-esc="kpi('active')"/> Active Rules</span>
+            <span class="st-item"><span class="st-dot gray"/><b t-esc="kpi('inactive')"/> Inactive</span>
+            <span class="st-item"><i class="fa fa-tag"/><b t-esc="kpi('categories')"/> Categories Covered</span>
+            <span class="st-item"><i class="fa fa-clock-o"/><b t-esc="kpi('updated_today')"/> Rules Updated Today</span>
+        </div>
+        <div class="hd-flow">
+            <span class="flow-chip">Complaint</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-chip">Conditions</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-chip on">Support Team</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-chip on">Assignee</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-chip">SLA</span>
+        </div>
+        <div class="hd-filterbar hd-route-filters">
+            <div class="hd-search-pill">
+                <i class="fa fa-filter"/>
+                <input placeholder="Filter rules..." t-model="state.filters.search" t-on-change="onFilterChange"/>
+            </div>
+            <select class="hd-select pill" t-model="state.filters.category_id" t-on-change="onFilterChange">
+                <option value="">Category</option>
+                <t t-foreach="masters.categories" t-as="c" t-key="c.id"><option t-att-value="c.id" t-esc="c.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.priority_id" t-on-change="onFilterChange">
+                <option value="">Priority</option>
+                <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.team_id" t-on-change="onFilterChange">
+                <option value="">Support Team</option>
+                <t t-foreach="masters.teams" t-as="tm" t-key="tm.id"><option t-att-value="tm.id" t-esc="tm.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.status" t-on-change="onFilterChange">
+                <option value="">Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <button class="hd-btn" type="button" t-on-click="resetFilters">Reset</button>
+            <button class="hd-btn link more-filters" type="button"><i class="fa fa-sliders"/> More Filters</button>
+        </div>
+        <div class="hd-card hd-table-card">
+            <div class="hd-row table-head">
+                <div class="table-title" t-esc="routingTableTitle"/>
+                <button class="hd-kebab hd-right" type="button"><i class="fa fa-ellipsis-h"/></button>
+            </div>
+            <table class="hd-table hd-route-table">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Priority</th>
+                        <th>Rule Name</th>
+                        <th>Category / Sub</th>
+                        <th>Condition</th>
+                        <th>Route To</th>
+                        <th>Assignee</th>
+                        <th>SLA</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(state.data.rules &amp;&amp; state.data.rules.length)">
+                        <td colspan="10" class="hd-empty">No routing rules yet. Click + Create Rule to add one.</td>
+                    </tr>
+                    <t t-foreach="state.data.rules || []" t-as="r" t-key="r.id">
+                        <tr class="clickable" t-att-data-id="r.id" t-on-click="editRule">
+                            <td class="order-cell"><i class="fa fa-bars grip"/><span t-esc="r.order"/></td>
+                            <td><span t-if="r.priority" class="hd-badge" t-att-class="'pr-' + r.priority_code" t-esc="r.priority"/></td>
+                            <td class="rule-name" t-esc="r.name"/>
+                            <td>
+                                <div t-esc="r.category"/>
+                                <div t-if="r.subcategory" class="muted" t-esc="r.subcategory"/>
+                            </td>
+                            <td><span t-if="r.condition" class="cond-pill" t-esc="r.condition"/></td>
+                            <td class="route-to" t-esc="r.team"/>
+                            <td t-esc="r.user"/>
+                            <td t-esc="r.sla"/>
+                            <td>
+                                <span class="status-dot" t-att-class="r.active ? 'on' : 'off'">
+                                    <t t-esc="r.active ? 'Active' : 'Inactive'"/>
+                                </span>
+                            </td>
+                            <td class="cat-actions" t-on-click.stop="() => {}">
+                                <button class="hd-icon-action" type="button" t-att-data-id="r.id" t-on-click="editRule" title="Edit"><i class="fa fa-pencil"/></button>
+                                <button t-if="isAdmin" class="hd-icon-action danger" type="button" t-att-data-id="r.id" t-on-click="deleteRule" title="Delete"><i class="fa fa-trash"/></button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Sla">
+    <div class="hd-page hd-sla">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Priority &amp; SLA Management</h1>
+                <p class="hd-sub">Define complaint urgency and service targets for response and resolution.</p>
+            </div>
+            <div class="hd-head-actions">
+                <button class="hd-btn ghost sla-sim-btn" type="button" t-on-click="openSlaSimulator">
+                    <i class="fa fa-play"/> SLA Simulator
+                </button>
+                <button class="hd-btn primary" type="button" t-on-click="() => this.openModal('sla')">+ Add SLA Policy</button>
+            </div>
+        </div>
+        <div class="hd-kpis hd-sla-kpis">
+            <div class="hd-kpi sla-kpi">
+                <span class="kpi-ico ico-purple"><i class="fa fa-exclamation"/></span>
+                <div>
+                    <div class="value" t-esc="kpi('priorities')"/>
+                    <div class="label">Priority Levels</div>
+                </div>
+            </div>
+            <div class="hd-kpi sla-kpi">
+                <span class="kpi-ico ico-blue"><i class="fa fa-clock-o"/></span>
+                <div>
+                    <div class="value" t-esc="kpi('policies')"/>
+                    <div class="label">SLA Policies</div>
+                </div>
+            </div>
+            <div class="hd-kpi sla-kpi">
+                <span class="kpi-ico ico-orange"><i class="fa fa-exclamation-triangle"/></span>
+                <div>
+                    <div class="value" t-esc="kpi('thresholds')"/>
+                    <div class="label">SLA Thresholds</div>
+                </div>
+            </div>
+            <div class="hd-kpi sla-kpi">
+                <span class="kpi-ico ico-red"><i class="fa fa-headphones"/></span>
+                <div>
+                    <div class="value" t-esc="kpi('coverage')"/>
+                    <div class="label">Critical Support</div>
+                </div>
+            </div>
+        </div>
+        <div class="hd-tabs">
+            <button type="button" class="hd-tab" t-att-class="isSlaTab('levels') ? 'active' : ''" t-on-click="() => this.setTab('levels')">Priority Levels</button>
+            <button type="button" class="hd-tab" t-att-class="isSlaTab('policies') ? 'active' : ''" t-on-click="() => this.setTab('policies')">SLA Policies</button>
+            <button type="button" class="hd-tab" t-att-class="isSlaTab('settings') ? 'active' : ''" t-on-click="() => this.setTab('settings')">SLA Settings</button>
+        </div>
+        <div t-if="isSlaTab('levels')" class="hd-card hd-table-card">
+            <table class="hd-table hd-sla-table">
+                <thead>
+                    <tr>
+                        <th>Priority</th>
+                        <th>Description</th>
+                        <th>Response Target</th>
+                        <th>Resolution Target</th>
+                        <th>Escalation</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(state.data.levels &amp;&amp; state.data.levels.length)">
+                        <td colspan="7" class="hd-empty">No priority levels found.</td>
+                    </tr>
+                    <t t-foreach="state.data.levels || []" t-as="l" t-key="l.id">
+                        <tr class="clickable" t-att-data-id="l.id" t-on-click="editSlaLevel">
+                            <td><span class="pri-dot" t-att-class="l.code"/><b t-esc="l.name"/></td>
+                            <td t-esc="l.description"/>
+                            <td t-esc="l.response"/>
+                            <td t-esc="l.resolution"/>
+                            <td><span t-if="l.escalation" class="level-pill" t-esc="l.escalation"/></td>
+                            <td><span class="hd-badge" t-att-class="l.active ? 'ok' : ''" t-esc="l.active ? 'Active' : 'Inactive'"/></td>
+                            <td class="cat-actions" t-on-click.stop="() => {}">
+                                <button class="hd-icon-action" type="button" t-att-data-id="l.id" t-on-click="editSlaLevel" title="Edit"><i class="fa fa-pencil"/></button>
+                                <button t-if="isAdmin" class="hd-icon-action danger" type="button" t-att-data-id="l.id" t-on-click="deletePriority" title="Delete"><i class="fa fa-trash"/></button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+        <div t-if="isSlaTab('policies')" class="hd-card hd-table-card">
+            <table class="hd-table hd-sla-table">
+                <thead>
+                    <tr>
+                        <th>Policy</th>
+                        <th>Priority</th>
+                        <th>Response Target</th>
+                        <th>Resolution Target</th>
+                        <th>Coverage</th>
+                        <th>At Risk</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(state.data.policies &amp;&amp; state.data.policies.length)">
+                        <td colspan="8" class="hd-empty">No SLA policies yet. Click + Add SLA Policy.</td>
+                    </tr>
+                    <t t-foreach="state.data.policies || []" t-as="p" t-key="p.id">
+                        <tr class="clickable" t-att-data-id="p.id" t-on-click="editSlaPolicy">
+                            <td class="rule-name" t-esc="p.name"/>
+                            <td><span class="pri-dot" t-att-class="p.priority_code"/><t t-esc="p.priority"/></td>
+                            <td t-esc="p.response"/>
+                            <td t-esc="p.resolution"/>
+                            <td t-esc="p.coverage"/>
+                            <td t-esc="p.warning_threshold + '%'"/>
+                            <td><span class="hd-badge" t-att-class="p.active ? 'ok' : ''" t-esc="p.active ? 'Active' : 'Inactive'"/></td>
+                            <td class="cat-actions" t-on-click.stop="() => {}">
+                                <button class="hd-icon-action" type="button" t-att-data-id="p.id" t-on-click="editSlaPolicy" title="Edit"><i class="fa fa-pencil"/></button>
+                                <button t-if="isAdmin" class="hd-icon-action danger" type="button" t-att-data-id="p.id" t-on-click="deleteSlaPolicy" title="Delete"><i class="fa fa-trash"/></button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+        <div t-if="isSlaTab('settings')" class="hd-card sla-settings">
+            <div class="hd-fields">
+                <div class="hd-field">
+                    <label>At Risk threshold (%)</label>
+                    <input type="number" t-model="state.slaSettings.at_risk"/>
+                </div>
+                <div class="hd-field">
+                    <label>Critical warning (%)</label>
+                    <input type="number" t-model="state.slaSettings.critical_warning"/>
+                </div>
+            </div>
+            <div class="hd-field" style="margin-top:14px">
+                <label>Pause Conditions</label>
+                <div class="radio-row">
+                    <label><input type="checkbox" t-att-checked="slaPauseOn('pause_awaiting')" data-key="pause_awaiting" t-on-click.prevent="toggleSlaPause"/> Awaiting Resident</label>
+                    <label><input type="checkbox" t-att-checked="slaPauseOn('pause_vendor')" data-key="pause_vendor" t-on-click.prevent="toggleSlaPause"/> With Vendor</label>
+                </div>
+            </div>
+            <div class="hd-footer">
+                <button class="hd-btn primary" type="button" t-on-click="saveSlaSettings">Save SLA Settings</button>
+            </div>
+        </div>
+        <div class="hd-sla-bottom">
+            <div class="hd-card">
+                <h3>Global Thresholds</h3>
+                <div class="thresh-row">
+                    <span>At Risk</span>
+                    <div class="hd-track"><div class="hd-fill fill-risk" t-att-style="thresholdStyle(state.slaSettings.at_risk)"/></div>
+                    <b t-esc="state.slaSettings.at_risk + '%'"/>
+                </div>
+                <div class="thresh-row">
+                    <span>Critical Warning</span>
+                    <div class="hd-track"><div class="hd-fill fill-crit" t-att-style="thresholdStyle(state.slaSettings.critical_warning)"/></div>
+                    <b t-esc="state.slaSettings.critical_warning + '%'"/>
+                </div>
+            </div>
+            <div class="hd-card">
+                <h3>Business Hours</h3>
+                <t t-foreach="state.data.attendances || []" t-as="a" t-key="a.day">
+                    <div class="kv"><span t-esc="a.day"/><b t-esc="a.hours"/></div>
+                </t>
+            </div>
+            <div class="hd-card">
+                <h3><i class="fa fa-pause-circle-o"/> Pause Conditions</h3>
+                <p class="muted">Timers automatically pause when ticket status matches:</p>
+                <div class="pause-chips">
+                    <t t-foreach="state.data.pauses || []" t-as="pause" t-key="pause">
+                        <span class="pause-chip" t-esc="pause"/>
+                    </t>
+                    <span t-if="!(state.data.pauses &amp;&amp; state.data.pauses.length)" class="muted">None</span>
+                </div>
+            </div>
+        </div>
+        <div t-if="slaTracker" class="sla-tracker">
+            <div class="trk-ico"><i class="fa fa-ticket"/></div>
+            <div class="trk-id">
+                <b class="ticket-id" t-esc="slaTracker.name"/>
+                <span class="hd-badge" t-att-class="'pr-' + slaTracker.priority_code" t-esc="slaTracker.priority"/>
+                <div class="muted" t-esc="slaTracker.title"/>
+            </div>
+            <div class="trk-bar">
+                <div class="trk-label">Response SLA</div>
+                <div class="hd-track"><div class="hd-fill fill-resp" t-att-class="responseBar.done ? 'done' : ''" t-att-style="slaBarStyle(responseBar)"/></div>
+                <span class="trk-meta ok" t-esc="responseBar.label"/>
+            </div>
+            <div class="trk-bar">
+                <div class="trk-label">Resolution SLA</div>
+                <div class="hd-track"><div class="hd-fill fill-resl" t-att-style="slaBarStyle(resolutionBar)"/></div>
+                <span class="trk-meta" t-esc="resolutionBar.label"/>
+            </div>
+            <span class="hd-badge ok" t-esc="slaTracker.sla_badge"/>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Escalations">
+    <div class="hd-page hd-esc">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Escalation Management</h1>
+                <p class="hd-sub">Review overdue and high-priority complaints and escalate them to the appropriate support level.</p>
+            </div>
+            <button class="hd-btn primary" type="button" t-on-click="openCreateEscalation">+ Create Escalation</button>
+        </div>
+        <div class="hd-statbar hd-esc-kpis">
+            <span class="st-item">Needs Escalation <b t-esc="kpi('needs')"/></span>
+            <span class="st-item">SLA At Risk <b t-esc="kpi('at_risk')"/></span>
+            <span class="st-item">SLA Breached <b class="danger" t-esc="kpi('breached')"/></span>
+            <span class="st-item">Escalated Today <b t-esc="kpi('today')"/></span>
+            <span class="st-item">Awaiting Action <b t-esc="kpi('awaiting')"/></span>
+        </div>
+        <div class="hd-card hd-esc-card">
+            <div class="hd-tabs">
+                <button type="button" class="hd-tab" t-att-class="isEscTab('needs') ? 'active' : ''" t-on-click="() => this.setTab('needs')">Needs Escalation</button>
+                <button type="button" class="hd-tab" t-att-class="isEscTab('escalated') ? 'active' : ''" t-on-click="() => this.setTab('escalated')">Escalated</button>
+                <button type="button" class="hd-tab" t-att-class="isEscTab('resolved') ? 'active' : ''" t-on-click="() => this.setTab('resolved')">Resolved</button>
+            </div>
+            <div class="hd-filterbar hd-esc-filters">
+                <div class="hd-search-pill">
+                    <i class="fa fa-search"/>
+                    <input placeholder="Search tickets..." t-model="state.filters.search" t-on-change="onFilterChange"/>
+                </div>
+                <select class="hd-select pill" t-model="state.filters.reason" t-on-change="onFilterChange">
+                    <option value="">Reason</option>
+                    <option value="sla_breached">SLA Breached</option>
+                    <option value="sla_at_risk">SLA At Risk</option>
+                    <option value="critical_priority">Critical Priority</option>
+                    <option value="repeated_complaint">Repeated Complaint</option>
+                    <option value="resident_dissatisfied">Resident Dissatisfied</option>
+                    <option value="manual">Manual Escalation</option>
+                </select>
+                <select class="hd-select pill" t-model="state.filters.priority_id" t-on-change="onFilterChange">
+                    <option value="">Priority</option>
+                    <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+                </select>
+                <select class="hd-select pill" t-model="state.filters.category_id" t-on-change="onFilterChange">
+                    <option value="">Category</option>
+                    <t t-foreach="masters.categories" t-as="c" t-key="c.id"><option t-att-value="c.id" t-esc="c.name"/></t>
+                </select>
+                <select class="hd-select pill" t-model="state.filters.team_id" t-on-change="onFilterChange">
+                    <option value="">Assigned Team</option>
+                    <t t-foreach="masters.teams" t-as="tm" t-key="tm.id"><option t-att-value="tm.id" t-esc="tm.name"/></t>
+                </select>
+                <button class="hd-btn ghost reset-esc" type="button" t-on-click="resetFilters"><i class="fa fa-sliders"/> Reset</button>
+            </div>
+            <table class="hd-table hd-esc-table">
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Complaint</th>
+                        <th>Priority</th>
+                        <th>Assigned To</th>
+                        <th>Escalation Reason</th>
+                        <th>SLA</th>
+                        <th>Level</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(state.data.rows &amp;&amp; state.data.rows.length)">
+                        <td colspan="8" class="hd-empty">No tickets need escalation. Create a complaint or click + Create Escalation.</td>
+                    </tr>
+                    <t t-foreach="state.data.rows || []" t-as="t" t-key="t.row_id">
+                        <tr>
+                            <td class="ticket-id clickable" t-att-data-id="t.id" t-on-click="onOpenTicket" t-esc="t.name"/>
+                            <td t-esc="t.title"/>
+                            <td>
+                                <span class="pri-dot" t-att-class="t.priority_code"/>
+                                <span class="pri-name" t-att-class="t.priority_code" t-esc="t.priority"/>
+                            </td>
+                            <td t-esc="t.assignee"/>
+                            <td><span class="esc-reason" t-att-class="t.reason_code" t-esc="t.reason"/></td>
+                            <td>
+                                <span class="sla-cell" t-att-class="t.sla_kind" t-esc="t.sla"/>
+                            </td>
+                            <td class="esc-level" t-esc="t.level"/>
+                            <td>
+                                <button t-if="t.action === 'escalate'" class="hd-btn ghost esc-act" type="button" t-att-data-id="t.id" t-on-click="openEscalateModal">Escalate</button>
+                                <button t-else="" class="hd-btn ghost esc-act" type="button" t-att-data-id="t.id" t-on-click="reviewEscalation">Review</button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Resolution">
+    <div class="hd-page hd-res">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Resolution &amp; Closure</h1>
+                <p class="hd-sub">Complete complaints, record the solution and close completed tickets.</p>
+            </div>
+            <button class="hd-btn primary" type="button" t-on-click="openCreateResolution">+ Resolve Complaint</button>
+        </div>
+        <div class="hd-res-counts">
+            <span>Needs Resolution (<b t-esc="kpi('needs')"/>)</span>
+            <span>Awaiting Verification (<b t-esc="kpi('verify')"/>)</span>
+            <span>Ready to Close (<b t-esc="kpi('close')"/>)</span>
+            <span>Closed Today (<b t-esc="kpi('closed_today')"/>)</span>
+        </div>
+        <div class="hd-card hd-res-card">
+            <div class="hd-tabs">
+                <button type="button" class="hd-tab" t-att-class="isResTab('needs') ? 'active' : ''" t-on-click="() => this.setTab('needs')">Needs Resolution</button>
+                <button type="button" class="hd-tab" t-att-class="isResTab('verify') ? 'active' : ''" t-on-click="() => this.setTab('verify')">Awaiting Verification</button>
+                <button type="button" class="hd-tab" t-att-class="isResTab('close') ? 'active' : ''" t-on-click="() => this.setTab('close')">Ready to Close</button>
+            </div>
+            <div class="hd-filterbar hd-res-filters">
+                <div class="hd-search-pill">
+                    <i class="fa fa-search"/>
+                    <input placeholder="Search complaint..." t-model="state.filters.search" t-on-change="onFilterChange"/>
+                </div>
+                <select class="hd-select pill" t-model="state.filters.category_id" t-on-change="onFilterChange">
+                    <option value="">Category</option>
+                    <t t-foreach="masters.categories" t-as="c" t-key="c.id"><option t-att-value="c.id" t-esc="c.name"/></t>
+                </select>
+                <select class="hd-select pill" t-model="state.filters.priority_id" t-on-change="onFilterChange">
+                    <option value="">Priority</option>
+                    <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+                </select>
+                <select class="hd-select pill" t-model="state.filters.user_id" t-on-change="onFilterChange">
+                    <option value="">Assigned To</option>
+                    <t t-foreach="masters.users" t-as="u" t-key="u.id"><option t-att-value="u.id" t-esc="u.name"/></t>
+                </select>
+                <select class="hd-select pill" t-model="state.filters.sla_status" t-on-change="onFilterChange">
+                    <option value="">SLA Status</option>
+                    <option value="on_track">On Track</option>
+                    <option value="at_risk">At Risk</option>
+                    <option value="breached">Breached</option>
+                    <option value="paused">Paused</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <button class="hd-btn ghost" type="button" t-on-click="resetFilters">Reset</button>
+            </div>
+            <table class="hd-table hd-res-table">
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Complaint</th>
+                        <th>Priority</th>
+                        <th>Assigned To</th>
+                        <th>SLA</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(state.data.tickets &amp;&amp; state.data.tickets.length)">
+                        <td colspan="7" class="hd-empty">No complaints in this queue. Resolve work from a live ticket, or click + Resolve Complaint.</td>
+                    </tr>
+                    <t t-foreach="state.data.tickets || []" t-as="t" t-key="t.id">
+                        <tr>
+                            <td class="ticket-id clickable" t-att-data-id="t.id" t-on-click="onOpenTicket" t-esc="t.name"/>
+                            <td t-esc="t.title"/>
+                            <td><span class="hd-badge" t-att-class="'pr-' + t.priority_code" t-esc="t.priority"/></td>
+                            <td t-esc="t.assignee"/>
+                            <td><span class="sla-cell" t-att-class="t.sla_kind" t-esc="t.sla"/></td>
+                            <td><span class="hd-badge" t-att-class="'st-' + t.state" t-esc="t.state_label"/></td>
+                            <td>
+                                <button t-if="t.action === 'close'" class="hd-btn ghost res-act" type="button" t-att-data-id="t.id" t-on-click="onCloseTicket">Close</button>
+                                <button t-elif="t.action === 'verify'" class="hd-btn ghost res-act" type="button" t-att-data-id="t.id" t-on-click="onVerify">Verify</button>
+                                <button t-else="" class="hd-btn primary res-act" type="button" t-att-data-id="t.id" t-on-click="openResolveModal">Resolve</button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+        <div class="hd-card hd-res-activity">
+            <div class="res-act-head">
+                <div>
+                    <h3>Recent Resolution Activity</h3>
+                    <p class="hd-sub">Latest complaints resolved or closed by the support team.</p>
+                </div>
+                <div class="res-act-meta"><t t-esc="kpi('resolved_count')"/> Resolved · <t t-esc="kpi('closed_count')"/> Closed</div>
+            </div>
+            <table class="hd-table hd-res-table">
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Complaint</th>
+                        <th>Resolved By</th>
+                        <th>Resolution</th>
+                        <th>Resolved On</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-if="!(state.data.recent &amp;&amp; state.data.recent.length)">
+                        <td colspan="7" class="hd-empty">No resolution activity yet.</td>
+                    </tr>
+                    <t t-foreach="state.data.recent || []" t-as="r" t-key="r.id">
+                        <tr>
+                            <td class="ticket-id clickable" t-att-data-id="r.ticket_id" t-on-click="onOpenTicket" t-esc="r.ticket"/>
+                            <td t-esc="r.title"/>
+                            <td t-esc="r.by"/>
+                            <td t-esc="r.text"/>
+                            <td t-esc="r.date"/>
+                            <td><span class="hd-badge" t-att-class="'st-' + r.state" t-esc="r.state_label"/></td>
+                            <td>
+                                <button class="hd-btn link" type="button" t-att-data-id="r.ticket_id" t-on-click="onOpenTicket">View</button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Feedback">
+    <div class="hd-row">
+        <div>
+            <h1 class="hd-title">Feedback &amp; Rating</h1>
+            <p class="hd-sub">Review resident feedback and satisfaction for resolved complaints.</p>
+        </div>
+        <button class="hd-btn hd-right" type="button" t-on-click="exportFeedback">Export</button>
+    </div>
+    <div class="hd-kpis">
+        <div class="hd-kpi"><div class="label">Awaiting Feedback</div><div class="value" t-esc="kpi('pending')"/></div>
+        <div class="hd-kpi"><div class="label">Received</div><div class="value" t-esc="kpi('received')"/></div>
+        <div class="hd-kpi"><div class="label">Average Rating</div><div class="value"><t t-esc="kpi('average')"/>/5</div></div>
+        <div class="hd-kpi warn"><div class="label">Low Ratings</div><div class="value" t-esc="kpi('low')"/></div>
+    </div>
+    <div class="hd-grid-2">
+        <div class="hd-card">
+            <div class="hd-tabs">
+                <button type="button" class="hd-tab" t-att-class="state.tab === 'pending' ? 'active' : ''" t-on-click="() => this.setTab('pending')">Awaiting Feedback</button>
+                <button type="button" class="hd-tab" t-att-class="state.tab === 'received' ? 'active' : ''" t-on-click="() => this.setTab('received')">Received Feedback</button>
+                <button type="button" class="hd-tab" t-att-class="state.tab === 'all' ? 'active' : ''" t-on-click="() => this.setTab('all')">All</button>
+            </div>
+            <table class="hd-table">
+                <thead><tr><th>Ticket</th><th>Complaint</th><th>Category</th><th>Resolved By</th><th>Resolved On</th><th>Feedback</th></tr></thead>
+                <tbody>
+                    <t t-foreach="state.data.rows || []" t-as="f" t-key="f.id">
+                        <tr>
+                            <td class="ticket-id clickable" t-att-data-id="f.ticket_id" t-on-click="onOpenTicket" t-esc="f.ticket"/>
+                            <td t-esc="f.title"/>
+                            <td t-esc="f.category"/>
+                            <td t-esc="f.resolved_by"/>
+                            <td t-esc="f.date"/>
+                            <td>
+                                <span t-if="f.rating" class="stars" t-esc="starText(f.rating)"/>
+                                <t t-else="">
+                                    <span class="hd-badge">Pending</span>
+                                    <button class="hd-btn link" type="button" t-att-data-id="f.id" t-on-click="openFeedbackModal">Rate</button>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <div class="hd-card">
+                <h3>Rating Overview</h3>
+                <div class="value" style="font-size:32px;font-weight:800" t-esc="kpi('average')"/>
+                <t t-foreach="starLevels" t-as="n" t-key="n">
+                    <div class="hd-hrow">
+                        <span><t t-esc="n"/> Star</span>
+                        <div class="hd-track"><div class="hd-fill fill-assigned" t-att-style="'width:' + starPct(n) + '%'"/></div>
+                        <span t-esc="starCount(n)"/>
+                    </div>
+                </t>
+            </div>
+            <div class="alert-box">
+                <b>Needs Attention</b>
+                <t t-foreach="state.data.low || []" t-as="l" t-key="l.id">
+                    <div class="kv"><span t-esc="l.ticket + ' ' + l.title"/><button class="hd-btn link" type="button" t-att-data-id="l.ticket_id" t-on-click="onOpenTicket">Review Details</button></div>
+                </t>
+            </div>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Reports">
+    <div class="hd-page hd-reports">
+        <div class="hd-page-head">
+            <div>
+                <h1 class="hd-title">Reports &amp; Analytics</h1>
+                <p class="hd-sub">Operational KPIs calculated from live tickets, SLA status and escalations.</p>
+            </div>
+            <button class="hd-btn primary" type="button" t-on-click="exportReport">Export Report</button>
+        </div>
+        <div class="hd-filterbar hd-report-filters">
+            <input class="hd-input" type="date" t-model="state.filters.date_from" t-on-change="onFilterChange"/>
+            <input class="hd-input" type="date" t-model="state.filters.date_to" t-on-change="onFilterChange"/>
+            <select class="hd-select pill" t-model="state.filters.category_id" t-on-change="onFilterChange">
+                <option value="">All Categories</option>
+                <t t-foreach="masters.categories" t-as="c" t-key="c.id"><option t-att-value="c.id" t-esc="c.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.priority_id" t-on-change="onFilterChange">
+                <option value="">All Priorities</option>
+                <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.team_id" t-on-change="onFilterChange">
+                <option value="">All Teams</option>
+                <t t-foreach="masters.teams" t-as="tm" t-key="tm.id"><option t-att-value="tm.id" t-esc="tm.name"/></t>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.state" t-on-change="onFilterChange">
+                <option value="">All Statuses</option>
+                <option value="open">Open group</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+            </select>
+            <select class="hd-select pill" t-model="state.filters.sla_status" t-on-change="onFilterChange">
+                <option value="">All SLA</option>
+                <option value="on_track">On Track</option>
+                <option value="at_risk">At Risk</option>
+                <option value="breached">Breached</option>
+                <option value="completed">Completed</option>
+            </select>
+            <button class="hd-btn" type="button" t-on-click="resetFilters">Reset</button>
+            <button class="hd-btn primary" type="button" t-on-click="reload">Apply Filters</button>
+        </div>
+        <div class="hd-kpis">
+            <div class="hd-kpi"><div class="label">Total Complaints</div><div class="value" t-esc="kpi('total')"/></div>
+            <div class="hd-kpi ok"><div class="label">Resolved</div><div class="value" t-esc="kpi('resolved')"/></div>
+            <div class="hd-kpi"><div class="label">Open</div><div class="value" t-esc="kpi('open')"/></div>
+            <div class="hd-kpi"><div class="label">SLA Compliance</div><div class="value"><t t-esc="kpi('compliance')"/>%</div></div>
+            <div class="hd-kpi"><div class="label">Avg Resolution</div><div class="value" t-esc="kpi('avg')"/></div>
+            <div class="hd-kpi"><div class="label">Escalations</div><div class="value" t-esc="kpi('escalations')"/></div>
+        </div>
+        <div class="hd-grid-2">
+            <div class="hd-card">
+                <h3>Complaint Volume Overview</h3>
+                <div class="hd-bars">
+                    <t t-foreach="state.data.volume || []" t-as="bar" t-key="bar.label">
+                        <div class="hd-bar-wrap">
+                            <div class="hd-bar" t-att-style="'height:' + volumeBarHeight(bar.created) + '%'">
+                                <span t-esc="bar.created"/>
+                            </div>
+                            <div class="bar-label" t-esc="bar.label"/>
+                        </div>
+                    </t>
+                </div>
+                <div class="muted" style="margin-top:8px">Bars show tickets created per day in the filtered set.</div>
+            </div>
+            <div class="hd-card">
+                <h3>Complaints by Category</h3>
+                <t t-foreach="state.data.by_category || []" t-as="c" t-key="c.id || c.name">
+                    <div class="hd-hrow">
+                        <span style="width:110px" t-esc="c.name"/>
+                        <div class="hd-track"><div class="hd-fill fill-assigned" t-att-style="'width:' + pct(c.count, kpi('total')) + '%'"/></div>
+                        <b t-esc="c.count"/>
+                    </div>
+                </t>
+                <div t-if="!(state.data.by_category &amp;&amp; state.data.by_category.length)" class="muted">No category data in this filter.</div>
+            </div>
+            <div class="hd-card">
+                <h3>SLA Performance</h3>
+                <div class="kv">Within <b t-esc="(state.data.sla &amp;&amp; state.data.sla.on_track) + '%'"/> </div>
+                <div class="kv">At Risk <b t-esc="(state.data.sla &amp;&amp; state.data.sla.at_risk) + '%'"/> </div>
+                <div class="kv">Breached <b t-esc="(state.data.sla &amp;&amp; state.data.sla.breached) + '%'"/> </div>
+                <div class="kv">Avg Response <b t-esc="kpi('avg_response')"/></div>
+                <div class="kv">Reopened <b t-esc="kpi('reopened')"/></div>
+            </div>
+            <div class="hd-card">
+                <h3>Team Performance</h3>
+                <t t-foreach="state.data.teams || []" t-as="tm" t-key="tm.id || tm.name">
+                    <div class="kv">
+                        <span t-esc="tm.name"/>
+                        <b t-esc="tm.resolved + ' / ' + tm.total + ' · ' + tm.breached + ' breached'"/>
+                    </div>
+                </t>
+                <h3 style="margin-top:16px">Escalations by Reason</h3>
+                <t t-foreach="state.data.escalation_reasons || []" t-as="er" t-key="er.name">
+                    <div class="kv"><span t-esc="er.name"/><b t-esc="er.count"/></div>
+                </t>
+                <div t-if="!(state.data.escalation_reasons &amp;&amp; state.data.escalation_reasons.length)" class="muted">No escalations in this filter.</div>
+            </div>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Ticket">
+    <t t-set="t" t-value="state.data.ticket || {}"/>
+    <div class="hd-row">
+        <div>
+            <div class="crumb">Helpdesk &gt; Complaints &gt; <t t-esc="t.name"/></div>
+            <h1 class="hd-title"><t t-esc="t.name"/> — <t t-esc="t.title"/></h1>
+            <p class="hd-sub">Complaint details and activity.</p>
+        </div>
+        <div class="hd-head-actions hd-right">
+            <button class="hd-btn link" type="button" t-on-click="() => this.setScreen('complaints')">Back</button>
+            <button class="hd-btn" type="button" t-att-data-id="t.id" t-on-click="openAssignModal">Assign</button>
+            <button class="hd-btn" type="button" t-att-data-id="t.id" t-on-click="openEscalateModal">Escalate</button>
+            <button class="hd-btn" type="button" t-att-data-id="t.id" t-on-click="openResolveModal">Resolve</button>
+            <button t-if="t.state === 'awaiting_verification' &amp;&amp; t.resolution_state !== 'verified'" class="hd-btn" type="button" t-att-data-id="t.id" t-on-click="onVerify">Verify</button>
+            <button t-if="t.state === 'resolved' || t.resolution_state === 'verified'" class="hd-btn" type="button" t-att-data-id="t.id" t-on-click="onCloseTicket">Close</button>
+            <button t-if="t.state === 'closed'" class="hd-btn" type="button" t-att-data-id="t.id" t-on-click="openReopenModal">Reopen</button>
+            <button t-if="isAdmin" class="hd-btn danger" type="button" t-att-data-id="t.id" t-on-click="deleteTicket">Delete</button>
+        </div>
+    </div>
+    <div class="hd-row" style="gap:8px;margin-bottom:12px">
+        <span class="hd-badge" t-att-class="'st-' + t.state" t-esc="t.state_label"/>
+        <span class="hd-badge" t-att-class="'pr-' + t.priority_code" t-esc="t.priority"/>
+        <span t-esc="t.sla"/>
+        <span>Assigned To: <t t-esc="t.assignee"/></span>
+        <span>Category: <t t-esc="t.category"/></span>
+    </div>
+    <div class="hd-form-grid">
+        <div>
+            <div class="hd-section">
+                <h3>Complaint Details</h3>
+                <div class="hd-fields">
+                    <div class="hd-field"><label>Complaint</label><b t-esc="t.title"/></div>
+                    <div class="hd-field"><label>Description</label><span t-esc="t.description"/></div>
+                    <div class="hd-field"><label>Category</label><span t-esc="t.category"/></div>
+                    <div class="hd-field"><label>Created By</label><span t-esc="t.created_by"/></div>
+                    <div class="hd-field"><label>Created On</label><span t-esc="t.created_full"/></div>
+                    <div class="hd-field"><label>Location</label><span t-esc="t.location"/></div>
+                    <div class="hd-field"><label>Priority</label><span t-esc="t.priority"/></div>
+                    <div class="hd-field"><label>Status</label><span t-esc="t.state_label"/></div>
+                </div>
+            </div>
+            <div class="hd-section">
+                <h3>Attachments</h3>
+                <t t-foreach="state.data.attachments || []" t-as="a" t-key="a.id">
+                    <div class="kv"><span t-esc="a.name"/><a t-att-href="a.url" target="_blank">Download</a></div>
+                </t>
+                <div t-if="!(state.data.attachments || []).length" class="hd-empty">No attachments</div>
+            </div>
+            <div class="hd-section">
+                <h3>Activity</h3>
+                <t t-foreach="state.data.history || []" t-as="h" t-key="h.id">
+                    <div class="kv"><span><t t-esc="h.time"/> <t t-esc="h.action"/> — <t t-esc="h.user"/></span><span t-esc="h.remarks || h.new"/></div>
+                </t>
+            </div>
+        </div>
+        <div>
+            <div class="preview-card">
+                <h4>Assignment</h4>
+                <div class="kv">Team <b t-esc="t.team"/></div>
+                <div class="kv">Assigned To <b t-esc="t.assignee"/></div>
+                <div class="kv">Assigned On <b t-esc="t.assigned_on"/></div>
+                <button class="hd-btn link" type="button" t-att-data-id="t.id" t-on-click="openAssignModal">Change Assignment</button>
+            </div>
+            <div class="preview-card">
+                <h4>SLA</h4>
+                <div class="kv">Policy <b t-esc="t.sla_policy"/></div>
+                <div class="kv">Remaining <b t-esc="t.sla"/></div>
+                <div class="kv">Status <b t-esc="t.sla_status"/></div>
+            </div>
+            <div class="preview-card">
+                <h4>Escalation</h4>
+                <div class="kv">Level <b t-esc="t.escalation_level || '—'"/></div>
+                <button class="hd-btn link" type="button" t-att-data-id="t.id" t-on-click="openEscalateModal">View Escalation</button>
+            </div>
+            <div class="preview-card">
+                <h4>Resolution</h4>
+                <p t-esc="t.resolution || 'No resolution has been recorded yet.'"/>
+                <button class="hd-btn link" type="button" t-att-data-id="t.id" t-on-click="openResolveModal">Add Resolution</button>
+            </div>
+        </div>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.Settings">
+    <div class="hd-row">
+        <div>
+            <h1 class="hd-title">Helpdesk Settings</h1>
+            <p class="hd-sub">Configure complaint workflow, reopening, feedback and attachment preferences.</p>
+        </div>
+        <button class="hd-btn primary hd-right" type="button" t-on-click="saveSettings">Save Changes</button>
+    </div>
+    <div class="hd-section">
+        <h3>General Settings</h3>
+        <div class="hd-fields">
+            <div class="hd-field"><label>Helpdesk Name</label><input t-model="state.form.app_name"/></div>
+            <div class="hd-field"><label>Default Priority</label>
+                <select t-model="state.form.default_priority_id">
+                    <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+                </select>
+            </div>
+            <div class="hd-field"><label>Automatic Routing</label>
+                <select t-model="state.form.auto_routing">
+                    <option value="true">Enabled</option>
+                    <option value="false">Disabled</option>
+                </select>
+            </div>
+            <div class="hd-field"><label>Verify Resolution Before Closure</label>
+                <select t-model="state.form.require_verification">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="hd-section">
+        <h3>Reopening &amp; Feedback</h3>
+        <div class="hd-fields">
+            <div class="hd-field"><label>Allow Reopen</label>
+                <select t-model="state.form.allow_reopen">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            <div class="hd-field"><label>Reopen Window (days)</label>
+                <input type="number" min="1" t-model="state.form.reopen_days"/>
+            </div>
+            <div class="hd-field"><label>Request Resident Feedback</label>
+                <select t-model="state.form.feedback_enabled">
+                    <option value="true">Enabled</option>
+                    <option value="false">Disabled</option>
+                </select>
+            </div>
+            <div class="hd-field"><label>Low Rating Threshold</label>
+                <input type="number" min="1" max="5" t-model="state.form.low_rating_threshold"/>
+            </div>
+        </div>
+    </div>
+    <div class="hd-section">
+        <h3>Attachments</h3>
+        <div class="hd-fields">
+            <div class="hd-field"><label>Allow Resident Attachments</label>
+                <select t-model="state.form.allow_resident_attachments">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            <div class="hd-field"><label>Allow Multiple Attachments</label>
+                <select t-model="state.form.allow_multiple_attachments">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="hd-section">
+        <h3>Complaint Numbering</h3>
+        <p>New complaints automatically receive the next available ticket number with prefix HD-.</p>
+        <p class="muted">SLA pause rules and business hours are configured per SLA policy on Priority &amp; SLA.</p>
+    </div>
+</t>
+
+<t t-name="fms_helpdesk.TicketTable">
+    <table class="hd-table">
+        <thead>
+            <tr>
+                <th>Ticket ID</th><th>Complaint</th><th>Resident</th><th>Category</th>
+                <th>Priority</th><th>Assigned To</th><th>SLA</th><th>Status</th>
+                <th t-if="showAssign">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr t-if="!(rows &amp;&amp; rows.length)">
+                <td t-att-colspan="showAssign ? 9 : 8" class="hd-empty">No complaints yet. Create one to see live records here.</td>
+            </tr>
+            <t t-foreach="rows || []" t-as="t" t-key="t.id">
+                <tr class="clickable" t-att-data-id="t.id" t-on-click="onOpenTicket">
+                    <td class="ticket-id" t-esc="t.name"/>
+                    <td t-esc="t.title"/>
+                    <td t-esc="t.resident"/>
+                    <td t-esc="t.category"/>
+                    <td><span class="hd-badge" t-att-class="'pr-' + t.priority_code" t-esc="t.priority"/></td>
+                    <td t-esc="t.assignee"/>
+                    <td t-esc="t.sla"/>
+                    <td><span class="hd-badge" t-att-class="'st-' + t.state" t-esc="t.state_label"/></td>
+                    <td t-if="showAssign">
+                        <button class="hd-btn primary" type="button" t-att-data-id="t.id" t-on-click.stop="openAssignModal">Assign</button>
+                    </td>
+                </tr>
+            </t>
+        </tbody>
+    </table>
+</t>
+
+<t t-name="fms_helpdesk.Modal">
+    <div class="hd-overlay" t-on-click="onOverlay">
+        <div class="hd-modal" t-on-click.stop="() => {}">
+            <t t-if="state.modal === 'team'">
+                <h2 t-esc="state.modalVals.id ? 'Edit Support Team' : 'Add Support Team'"/>
+                <p class="hint">Teams receive routed tickets and appear in Categories / Routing / Assign.</p>
+                <div class="hd-field"><label>Team Name *</label><input t-model="state.modalVals.name" placeholder="e.g. Plumbing Team"/></div>
+                <div class="hd-field" style="margin-top:8px"><label>Description</label><textarea t-model="state.modalVals.description"/></div>
+                <div class="hd-fields" style="margin-top:8px">
+                    <div class="hd-field"><label>Team Lead</label>
+                        <select t-model="state.modalVals.leader_id">
+                            <option value="">Optional</option>
+                            <t t-foreach="masters.users" t-as="u" t-key="u.id"><option t-att-value="u.id" t-esc="u.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field"><label>Assignment Method</label>
+                        <select t-model="state.modalVals.assignment_method">
+                            <option value="manual">Manual</option>
+                            <option value="round_robin">Round Robin</option>
+                            <option value="balanced">Balanced Workload</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Members</label>
+                    <div class="hd-check-list" style="max-height:160px;overflow:auto;border:1px solid #ddd;padding:8px;border-radius:6px">
+                        <t t-foreach="masters.users || []" t-as="u" t-key="u.id">
+                            <label class="hd-check-row" style="display:flex;gap:8px;align-items:center;margin:4px 0">
+                                <input type="checkbox" t-att-value="u.id" t-att-checked="isTeamMemberSelected(u.id)" t-on-change="onTeamMemberToggle"/>
+                                <span t-esc="u.name"/>
+                            </label>
+                        </t>
+                    </div>
+                    <div class="muted" style="margin-top:4px">Select one or more members for this team.</div>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Status</label>
+                    <select t-model="state.modalVals.active">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="saveTeam">Save Team</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'category'">
+                <h2>Add Complaint Category</h2>
+                <p class="hint">Create a category and configure its basic routing setup.</p>
+                <div class="hd-field"><label>Category Name *</label><input t-model="state.modalVals.name"/></div>
+                <div class="hd-field" style="margin-top:10px"><label>Description</label><textarea t-model="state.modalVals.description"/></div>
+                <div class="hd-field" style="margin-top:10px"><label>Status</label>
+                    <select t-model="state.modalVals.active"><option value="true">Active</option><option value="false">Inactive</option></select>
+                </div>
+                <div class="hd-field" style="margin-top:10px"><label>Subcategories</label>
+                    <div class="add-row">
+                        <input placeholder="Enter subcategory name" t-model="state.modalVals.sub_input"/>
+                        <button class="hd-btn primary" type="button" t-on-click="addSub">+ Add</button>
+                    </div>
+                    <div class="chips">
+                        <t t-foreach="state.modalVals.subcategory_names || []" t-as="s" t-key="s">
+                            <span class="chip"><t t-esc="s"/> <button type="button" t-att-data-name="s" t-on-click="removeSub">×</button></span>
+                        </t>
+                    </div>
+                </div>
+                <div class="hd-fields" style="margin-top:12px">
+                    <div class="hd-field"><label>Default Support Team *</label>
+                        <select t-model="state.modalVals.default_team_id">
+                            <option value="">Select team</option>
+                            <t t-foreach="masters.teams" t-as="tm" t-key="tm.id"><option t-att-value="tm.id" t-esc="tm.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field"><label>Default Assignee</label>
+                        <select t-model="state.modalVals.default_user_id">
+                            <option value="">Optional</option>
+                            <t t-foreach="masters.users" t-as="u" t-key="u.id"><option t-att-value="u.id" t-esc="u.name"/></t>
+                        </select>
+                    </div>
+                </div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="saveCategory">Save Category</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'routing'">
+                <h2>Create Routing Rule</h2>
+                <p class="hint">Automatically route complaints to the right support team and staff member.</p>
+                <div class="hd-field"><label>Rule Name *</label><input t-model="state.modalVals.name"/></div>
+                <div class="hd-fields" style="margin-top:10px">
+                    <div class="hd-field"><label>Category</label>
+                        <select t-model="state.modalVals.category_id">
+                            <option value=""/>
+                            <t t-foreach="masters.categories" t-as="c" t-key="c.id"><option t-att-value="c.id" t-esc="c.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field"><label>Subcategory</label>
+                        <select t-model="state.modalVals.subcategory_id">
+                            <option value=""/>
+                            <t t-foreach="modalSubs" t-as="s" t-key="s.id"><option t-att-value="s.id" t-esc="s.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field"><label>Priority</label>
+                        <select t-model="state.modalVals.priority_id">
+                            <option value=""/>
+                            <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field"><label>Support Team *</label>
+                        <select t-model="state.modalVals.team_id">
+                            <option value="">Select team</option>
+                            <t t-foreach="masters.teams" t-as="tm" t-key="tm.id"><option t-att-value="tm.id" t-esc="tm.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field"><label>Assignee</label>
+                        <select t-model="state.modalVals.user_id">
+                            <option value=""/>
+                            <t t-foreach="masters.users" t-as="u" t-key="u.id"><option t-att-value="u.id" t-esc="u.name"/></t>
+                        </select>
+                    </div>
+                    <div class="hd-field"><label>SLA Policy</label>
+                        <select t-model="state.modalVals.sla_policy_id">
+                            <option value=""/>
+                            <t t-foreach="masters.sla_policies" t-as="s" t-key="s.id"><option t-att-value="s.id" t-esc="s.name"/></t>
+                        </select>
+                    </div>
+                </div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="saveRule">Save Rule</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'priority'">
+                <h2>Edit Priority Level</h2>
+                <p class="hint">Update urgency, targets and the default escalation level.</p>
+                <div class="hd-field"><label>Priority Name *</label><input t-model="state.modalVals.name"/></div>
+                <div class="hd-field" style="margin-top:8px"><label>Description</label><textarea t-model="state.modalVals.description"/></div>
+                <div class="hd-field" style="margin-top:8px"><label>Escalation Level</label>
+                    <select t-model="state.modalVals.escalation_level_id">
+                        <option value=""/>
+                        <t t-foreach="masters.escalation_levels" t-as="lv" t-key="lv.id"><option t-att-value="lv.id" t-esc="lv.name"/></t>
+                    </select>
+                </div>
+                <div class="hd-fields" style="margin-top:8px">
+                    <div class="hd-field"><label>Response Target</label>
+                        <div class="add-row hd-duration-row">
+                            <input class="hd-duration-num" type="text" inputmode="numeric" placeholder="30"
+                                   t-att-value="state.modalVals.response_target"
+                                   data-field="response_target" t-on-input="onModalNumberInput"/>
+                            <select t-model="state.modalVals.response_unit">
+                                <option value="minutes">Minutes</option>
+                                <option value="hours">Hours</option>
+                                <option value="days">Days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="hd-field"><label>Resolution Target</label>
+                        <div class="add-row hd-duration-row">
+                            <input class="hd-duration-num" type="text" inputmode="numeric" placeholder="4"
+                                   t-att-value="state.modalVals.resolution_target"
+                                   data-field="resolution_target" t-on-input="onModalNumberInput"/>
+                            <select t-model="state.modalVals.resolution_unit">
+                                <option value="minutes">Minutes</option>
+                                <option value="hours">Hours</option>
+                                <option value="days">Days</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Status</label>
+                    <select t-model="state.modalVals.active"><option value="true">Active</option><option value="false">Inactive</option></select>
+                </div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="savePriority">Save Priority</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'sla'">
+                <h2>Add SLA Policy</h2>
+                <p class="hint">Define response and resolution targets for complaints.</p>
+                <div class="hd-field"><label>Policy Name *</label><input t-model="state.modalVals.name"/></div>
+                <div class="hd-field" style="margin-top:8px"><label>Description</label><textarea t-model="state.modalVals.description"/></div>
+                <div class="hd-field" style="margin-top:8px"><label>Complaint Priority *</label>
+                    <select t-model="state.modalVals.priority_id">
+                        <t t-foreach="masters.priorities" t-as="p" t-key="p.id"><option t-att-value="p.id" t-esc="p.name"/></t>
+                    </select>
+                </div>
+                <div class="hd-fields" style="margin-top:8px">
+                    <div class="hd-field"><label>Response Target *</label>
+                        <div class="add-row hd-duration-row">
+                            <input class="hd-duration-num" type="text" inputmode="numeric" placeholder="30"
+                                   t-att-value="state.modalVals.response_target"
+                                   data-field="response_target" t-on-input="onModalNumberInput"/>
+                            <select t-model="state.modalVals.response_unit">
+                                <option value="minutes">Minutes</option>
+                                <option value="hours">Hours</option>
+                                <option value="days">Days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="hd-field"><label>Resolution Target *</label>
+                        <div class="add-row hd-duration-row">
+                            <input class="hd-duration-num" type="text" inputmode="numeric" placeholder="4"
+                                   t-att-value="state.modalVals.resolution_target"
+                                   data-field="resolution_target" t-on-input="onModalNumberInput"/>
+                            <select t-model="state.modalVals.resolution_unit">
+                                <option value="minutes">Minutes</option>
+                                <option value="hours">Hours</option>
+                                <option value="days">Days</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="hd-fields" style="margin-top:8px">
+                    <div class="hd-field"><label>Coverage</label>
+                        <select t-model="state.modalVals.coverage">
+                            <option value="business_hours">Business Hours</option>
+                            <option value="24x7">24×7</option>
+                        </select>
+                    </div>
+                    <div class="hd-field"><label>At Risk at (%)</label>
+                        <input type="text" inputmode="numeric" placeholder="80"
+                               t-att-value="state.modalVals.warning_threshold"
+                               data-field="warning_threshold" t-on-input="onModalNumberInput"/>
+                    </div>
+                </div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="saveSla">Save SLA Policy</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'slaSimulator'">
+                <h2>SLA Simulator</h2>
+                <p class="hint">Preview response and resolution timers on a live complaint.</p>
+                <div class="hd-field"><label>Complaint</label>
+                    <select t-model="state.modalVals.ticket_id">
+                        <option value="">Select a ticket</option>
+                        <t t-foreach="state.data.tickets || []" t-as="tk" t-key="tk.id">
+                            <option t-att-value="tk.id"><t t-esc="tk.name"/> — <t t-esc="tk.title"/></option>
+                        </t>
+                    </select>
+                </div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="doSimulateSla">Run Simulator</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'assign'">
+                <h2>Assign Ticket</h2>
+                <p class="hint">Pick an open ticket (including ones already auto-routed), then choose team/staff.</p>
+                <div class="hd-field">
+                    <label>Ticket *</label>
+                    <select t-model="state.modalVals.ticket_id">
+                        <option value="">Select ticket</option>
+                        <t t-foreach="assignTicketOptions" t-as="tk" t-key="tk.id">
+                            <option t-att-value="tk.id" t-esc="tk.name"/>
+                        </t>
+                    </select>
+                    <div t-if="!assignTicketOptions.length" class="muted" style="margin-top:4px">No open tickets found. Create a complaint first.</div>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Support Team</label>
+                    <select t-model="state.modalVals.team_id">
+                        <option value=""/>
+                        <t t-foreach="masters.teams" t-as="tm" t-key="tm.id"><option t-att-value="tm.id" t-esc="tm.name"/></t>
+                    </select>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Staff Member</label>
+                    <select t-model="state.modalVals.user_id">
+                        <option value=""/>
+                        <t t-foreach="masters.users" t-as="u" t-key="u.id"><option t-att-value="u.id" t-esc="u.name"/></t>
+                    </select>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Reason</label><textarea t-model="state.modalVals.reason"/></div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="doAssign">Assign</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'escalate'">
+                <h2>Create Escalation</h2>
+                <p class="hint">Pick an open ticket, then choose the escalation level. Closed tickets will not appear here.</p>
+                <div class="hd-field"><label>Ticket *</label>
+                    <select t-model="state.modalVals.ticket_id">
+                        <option value="">Select ticket</option>
+                        <t t-foreach="escalateTicketOptions" t-as="tk" t-key="tk.id">
+                            <option t-att-value="tk.id" t-esc="tk.name"/>
+                        </t>
+                    </select>
+                    <div t-if="!escalateTicketOptions.length" class="muted" style="margin-top:4px">
+                        No open tickets. Create a new complaint first, then come back.
+                    </div>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Escalation Level *</label>
+                    <select t-model="state.modalVals.level_id">
+                        <option value="">Select level</option>
+                        <t t-foreach="masters.escalation_levels || []" t-as="l" t-key="l.id">
+                            <option t-att-value="l.id" t-esc="l.name"/>
+                        </t>
+                    </select>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Reason</label>
+                    <select t-model="state.modalVals.reason">
+                        <option value="sla_breached">SLA Breached</option>
+                        <option value="sla_at_risk">SLA At Risk</option>
+                        <option value="critical_priority">Critical Priority</option>
+                        <option value="repeated_complaint">Repeated Complaint</option>
+                        <option value="resident_dissatisfied">Resident Dissatisfied</option>
+                        <option value="manual">Manual Escalation</option>
+                    </select>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Comment</label><textarea t-model="state.modalVals.comment"/></div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="doEscalate">Escalate</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'resolve'">
+                <h2>Resolve Complaint</h2>
+                <p class="hint">Record the solution and close the work on a live complaint.</p>
+                <div class="hd-field"><label>Ticket</label>
+                    <select t-model="state.modalVals.ticket_id">
+                        <option value="">Select ticket</option>
+                        <t t-foreach="resolveTicketOptions" t-as="tk" t-key="tk.id">
+                            <option t-att-value="tk.id" t-esc="tk.name"/>
+                        </t>
+                    </select>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Resolution *</label><textarea t-model="state.modalVals.description"/></div>
+                <div class="hd-field" style="margin-top:8px"><label>Work Performed</label><textarea t-model="state.modalVals.work_performed"/></div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="doResolve">Save Resolution</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'routingTest'">
+                <h2>Test Routing</h2>
+                <p class="hint">Pick the category you created, then click Test.</p>
+                <div class="hd-field"><label>Category *</label>
+                    <select t-att-value="state.modalVals.category_id" t-on-change="onRoutingTestCategoryChange">
+                        <option value="">Select category</option>
+                        <t t-foreach="masters.categories || []" t-as="c" t-key="c.id">
+                            <option t-att-value="c.id" t-att-selected="isRoutingTestSelected('category_id', c.id)" t-esc="c.name"/>
+                        </t>
+                    </select>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Subcategory</label>
+                    <select t-att-value="state.modalVals.subcategory_id" data-field="subcategory_id" t-on-change="onRoutingTestFieldChange">
+                        <option value="">Optional</option>
+                        <t t-foreach="modalSubs" t-as="s" t-key="s.id">
+                            <option t-att-value="s.id" t-att-selected="isRoutingTestSelected('subcategory_id', s.id)" t-esc="s.name"/>
+                        </t>
+                    </select>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Priority</label>
+                    <select t-att-value="state.modalVals.priority_id" data-field="priority_id" t-on-change="onRoutingTestFieldChange">
+                        <option value="">Optional</option>
+                        <t t-foreach="masters.priorities || []" t-as="p" t-key="p.id">
+                            <option t-att-value="p.id" t-att-selected="isRoutingTestSelected('priority_id', p.id)" t-esc="p.name"/>
+                        </t>
+                    </select>
+                </div>
+                <p t-if="state.modalVals.summary" class="hint" style="margin-top:12px" t-esc="state.modalVals.summary"/>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="doTestRouting">Test</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'reopen'">
+                <h2>Reopen Ticket</h2>
+                <p class="hint">Provide a reason. The ticket returns to a working state under reopen rules.</p>
+                <div class="hd-field"><label>Reason *</label><textarea t-model="state.modalVals.reason"/></div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="doReopen">Confirm Reopen</button>
+                </div>
+            </t>
+            <t t-elif="state.modal === 'feedback'">
+                <h2>Submit Feedback</h2>
+                <p class="hint">Rate the resolution for this complaint.</p>
+                <div class="hd-field"><label>Rating *</label>
+                    <select t-model="state.modalVals.rating">
+                        <option value="">Select</option>
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Good</option>
+                        <option value="3">3 - Average</option>
+                        <option value="2">2 - Poor</option>
+                        <option value="1">1 - Very Poor</option>
+                    </select>
+                </div>
+                <div class="hd-field" style="margin-top:8px"><label>Comment</label><textarea t-model="state.modalVals.comment"/></div>
+                <div class="hd-footer">
+                    <button class="hd-btn cancel" type="button" t-on-click="closeModal">Cancel</button>
+                    <button class="hd-btn primary" type="button" t-on-click="doSubmitFeedback">Submit</button>
+                </div>
+            </t>
+        </div>
+    </div>
+</t>
+</templates>

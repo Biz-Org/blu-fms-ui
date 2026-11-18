@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_fms_helpdesk_app" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'dashboard'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_complaints" model="ir.actions.client">
+        <field name="name">Complaints</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'complaints'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_create" model="ir.actions.client">
+        <field name="name">Create Ticket</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'create'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_my" model="ir.actions.client">
+        <field name="name">My Complaints</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'my_complaints'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_queue" model="ir.actions.client">
+        <field name="name">Work Queue</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'work_queue'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_assign" model="ir.actions.client">
+        <field name="name">Assignments</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'assignments'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_categories" model="ir.actions.client">
+        <field name="name">Categories</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'categories'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_routing" model="ir.actions.client">
+        <field name="name">Routing Rules</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'routing'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_sla" model="ir.actions.client">
+        <field name="name">Priority &amp; SLA</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'sla'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_escalations" model="ir.actions.client">
+        <field name="name">Escalations</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'escalations'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_resolution" model="ir.actions.client">
+        <field name="name">Resolution &amp; Closure</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'resolution'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_feedback" model="ir.actions.client">
+        <field name="name">Feedback</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'feedback'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_reports" model="ir.actions.client">
+        <field name="name">Reports &amp; Analytics</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'reports'}</field>
+    </record>
+    <record id="action_fms_helpdesk_app_settings" model="ir.actions.client">
+        <field name="name">Settings</field>
+        <field name="tag">fms_helpdesk.app</field>
+        <field name="context">{'screen': 'settings'}</field>
+    </record>
+</odoo>
