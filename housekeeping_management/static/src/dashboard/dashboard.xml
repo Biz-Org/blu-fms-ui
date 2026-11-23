@@ -1,0 +1,917 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="housekeeping_management.Dashboard">
+        <div t-attf-class="o_hk_app {{ state.menuOpen ? 'hk-menu-open' : '' }}">
+            <div class="hk-backdrop" t-on-click="closeMenu"/>
+            <aside class="hk-sidebar">
+                <div class="hk-brand">
+                    <span class="hk-logo" aria-hidden="true">C</span>
+                    <span class="hk-brand-text">
+                        <strong>CleanSync Pro</strong>
+                        <small>Facility Operations</small>
+                    </span>
+                    <button type="button" class="hk-icon-btn hk-sidebar-close" t-on-click="closeMenu" title="Close menu">
+                        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                </div>
+
+                <button type="button" class="hk-emergency" t-on-click="emergencyAlert">
+                    <svg viewBox="0 0 24 24"><path d="M12 4.2l8.2 14.6H3.8L12 4.2z"/><path d="M12 10v4.2"/><path d="M12 16.8h.01"/></svg>
+                    Emergency Alert
+                </button>
+
+                <nav class="hk-nav">
+                    <button type="button" t-att-class="state.screen === 'dashboard' ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('dashboard')">
+                        <svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
+                        <span>Dashboard</span>
+                    </button>
+                    <button type="button" t-att-class="state.screen === 'roster' ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('roster')">
+                        <svg viewBox="0 0 24 24"><path d="M16.5 20.5v-1.8a3.6 3.6 0 0 0-3.6-3.6H7.1a3.6 3.6 0 0 0-3.6 3.6v1.8"/><circle cx="10" cy="7.2" r="2.8"/><path d="M20.5 20.5v-1.8a3.6 3.6 0 0 0-2.7-3.5"/><path d="M16.2 4.5a2.8 2.8 0 0 1 0 5.3"/></svg>
+                        <span>Staff &amp; Roster</span>
+                    </button>
+                    <button type="button" t-att-class="isZonesActive() ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('zones')">
+                        <svg viewBox="0 0 24 24"><path d="M4 20.5h16"/><path d="M6.5 20.5V6.2A1.7 1.7 0 0 1 8.2 4.5h5.1a1.7 1.7 0 0 1 1.7 1.7v14.3"/><path d="M15 20.5V10.2h3.2a1.6 1.6 0 0 1 1.6 1.6v8.7"/><path d="M9 8.2h2M9 11.5h2M9 14.8h2"/></svg>
+                        <span>Zones</span>
+                    </button>
+                    <button type="button" t-att-class="isScheduleActive() ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('schedule')">
+                        <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M8 3.5v3.2M16 3.5v3.2M3.5 10h17"/></svg>
+                        <span>Schedule</span>
+                    </button>
+                    <button type="button" t-att-class="isTasksActive() ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('tasks')">
+                        <svg viewBox="0 0 24 24"><rect x="6" y="3.8" width="12" height="16.4" rx="2"/><path d="M9 3.8h6v2.1H9z"/><path d="M9 10.2h6M9 13.6h6M9 17h4"/></svg>
+                        <span>Tasks</span>
+                    </button>
+                    <button type="button" t-att-class="state.screen === 'checklist' ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('checklist')">
+                        <svg viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8 12.2l2.2 2.2 5-5.2"/></svg>
+                        <span>Checklist</span>
+                    </button>
+                    <button type="button" t-att-class="state.screen === 'verification' ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('verification')">
+                        <svg viewBox="0 0 24 24"><path d="M12 3.2l6.6 2.6v5.4c0 4.2-2.7 7-6.6 8.6-3.9-1.6-6.6-4.4-6.6-8.6V5.8L12 3.2z"/><path d="M9.1 12.1l1.9 1.9 3.9-4"/></svg>
+                        <span>Verification</span>
+                    </button>
+                    <button type="button" t-att-class="state.screen === 'performance' ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('performance')">
+                        <svg viewBox="0 0 24 24"><path d="M4 19.5V10.5"/><path d="M10 19.5V5.5"/><path d="M16 19.5v-6"/><path d="M3 19.5h18"/></svg>
+                        <span>Performance</span>
+                    </button>
+                </nav>
+
+                <div class="hk-side-footer">
+                    <button type="button" t-att-class="state.screen === 'settings' ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('settings')">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4L18 18M18 6l-1.6 1.6M7.6 16.4L6 18"/></svg>
+                        <span>Settings</span>
+                    </button>
+                    <button type="button" t-att-class="state.screen === 'support' ? 'hk-link active' : 'hk-link'" t-on-click="() => this.selectScreen('support')">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2.2M12 17.8V20M4 12h2.2M17.8 12H20"/></svg>
+                        <span>Support</span>
+                    </button>
+                </div>
+            </aside>
+
+            <main class="hk-main">
+                <div class="hk-mobile-bar">
+                    <button type="button" class="hk-icon-btn" t-on-click="toggleMenu" title="Open menu">
+                        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                    </button>
+                    <strong t-esc="title"/>
+                    <button type="button" class="hk-icon-btn hk-bell" title="Alerts">
+                        <svg viewBox="0 0 24 24"><path d="M6.2 9.2a5.8 5.8 0 1 1 11.6 0c0 6.3 2.6 6.6 2.6 8.4H3.6c0-1.8 2.6-2.1 2.6-8.4"/><path d="M10 20.2a2 2 0 0 0 4 0"/></svg>
+                        <span class="hk-dot"/>
+                    </button>
+                </div>
+
+                <t t-if="state.screen === 'dashboard'"><t t-call="housekeeping_management.ScreenDashboard"/></t>
+                <t t-elif="state.screen === 'roster'"><t t-call="housekeeping_management.Roster"/></t>
+                <t t-elif="state.screen === 'zones'"><t t-call="housekeeping_management.Zones"/></t>
+                <t t-elif="state.screen === 'zone_form'"><t t-call="housekeeping_management.ZoneForm"/></t>
+                <t t-elif="state.screen === 'schedule'"><t t-call="housekeeping_management.Schedule"/></t>
+                <t t-elif="state.screen === 'schedule_form'"><t t-call="housekeeping_management.ScheduleForm"/></t>
+                <t t-elif="state.screen === 'tasks'"><t t-call="housekeeping_management.Tasks"/></t>
+                <t t-elif="state.screen === 'task_form'"><t t-call="housekeeping_management.TaskForm"/></t>
+                <t t-elif="state.screen === 'checklist'"><t t-call="housekeeping_management.Checklist"/></t>
+                <t t-elif="state.screen === 'verification'"><t t-call="housekeeping_management.Verification"/></t>
+                <t t-elif="state.screen === 'performance'"><t t-call="housekeeping_management.Performance"/></t>
+                <t t-else="">
+                    <section class="hk-card hk-placeholder">
+                        <h2 t-esc="title"/>
+                        <p>This screen shell is ready. Content follows the CleanSync design system.</p>
+                    </section>
+                </t>
+            </main>
+        </div>
+    </t>
+
+    <t t-name="housekeeping_management.ScreenDashboard">
+        <header class="hk-top">
+            <h1>Housekeeping Dashboard</h1>
+            <div class="hk-top-actions hk-desktop-only">
+                <button type="button" class="hk-icon-btn" title="Calendar" t-on-click="() => this.selectScreen('schedule')">
+                    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M8 3.5v3.2M16 3.5v3.2M3.5 10h17"/></svg>
+                </button>
+                <button type="button" class="hk-icon-btn hk-bell" title="Alerts">
+                    <svg viewBox="0 0 24 24"><path d="M6.2 9.2a5.8 5.8 0 1 1 11.6 0c0 6.3 2.6 6.6 2.6 8.4H3.6c0-1.8 2.6-2.1 2.6-8.4"/><path d="M10 20.2a2 2 0 0 0 4 0"/></svg>
+                    <span class="hk-dot"/>
+                </button>
+            </div>
+        </header>
+
+        <section class="hk-kpis">
+            <article class="hk-card hk-kpi">
+                <div class="hk-kpi-head"><span>Total Staff</span><i class="hk-kpi-icon hk-kpi-purple"><svg viewBox="0 0 24 24"><path d="M16.5 20.5v-1.8a3.6 3.6 0 0 0-3.6-3.6H7.1a3.6 3.6 0 0 0-3.6 3.6v1.8"/><circle cx="10" cy="7.2" r="2.8"/></svg></i></div>
+                <strong t-esc="kpis and kpis.total_staff or 0"/>
+                <p><span>Staff</span><em class="is-green"><t t-esc="kpis and kpis.present or 0"/> Present</em></p>
+            </article>
+            <article class="hk-card hk-kpi">
+                <div class="hk-kpi-head"><span>Today's Tasks</span><i class="hk-kpi-icon hk-kpi-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8.6 12.2l2.3 2.3 4.5-4.8"/></svg></i></div>
+                <strong t-esc="kpis and kpis.today_tasks or 0"/>
+                <p><span>Tasks</span><em class="is-green"><t t-esc="kpis and kpis.completed or 0"/> Completed</em></p>
+            </article>
+            <article class="hk-card hk-kpi">
+                <div class="hk-kpi-head"><span>Pending/Overdue</span><i class="hk-kpi-icon hk-kpi-amber"><svg viewBox="0 0 24 24"><path d="M12 4.2l8.2 14.6H3.8L12 4.2z"/><path d="M12 10v4.2"/><path d="M12 16.8h.01"/></svg></i></div>
+                <strong t-esc="kpis and kpis.pending or 0"/>
+                <p><span>Pending</span><em class="is-red"><t t-esc="kpis and kpis.overdue or 0"/> Overdue</em></p>
+            </article>
+            <article class="hk-card hk-kpi">
+                <div class="hk-kpi-head"><span>Verification</span><i class="hk-kpi-icon hk-kpi-orange"><svg viewBox="0 0 24 24"><rect x="6" y="3.8" width="12" height="16.4" rx="2"/><path d="M9 11h6M9 14.5h4"/></svg></i></div>
+                <strong t-esc="kpis and kpis.verification or 0"/>
+                <p><span>Tasks</span><em class="is-muted">Pending Review</em></p>
+            </article>
+        </section>
+
+        <section class="hk-grid">
+            <article class="hk-card hk-ops">
+                <h2>Today's Cleaning Operations</h2>
+                <div class="hk-table-wrap">
+                    <table class="hk-table">
+                        <thead>
+                            <tr><th>Cleaning Task</th><th>Zone</th><th>Assigned Staff</th><th>Scheduled</th><th class="is-right">Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="state.data and state.data.operations or []" t-as="op" t-key="op.id">
+                                <td class="hk-task-name" t-esc="op.name"/>
+                                <td t-esc="op.zone"/>
+                                <td><span class="hk-staff"><span class="hk-avatar" t-attf-style="background: {{ op.color }}" t-esc="op.initials"/><span t-esc="op.staff"/></span></td>
+                                <td t-esc="op.time"/>
+                                <td class="is-right"><span t-attf-class="hk-status hk-status-{{ op.status }}" t-esc="op.status_label"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+            <div class="hk-side">
+                <article class="hk-card hk-summary">
+                    <h2>Housekeeping Summary</h2>
+                    <div class="hk-metric">
+                        <div class="hk-metric-top"><span>Staff Present</span><b><t t-esc="summary and summary.present or 0"/> <small>/ <t t-esc="summary and summary.total_staff or 0"/></small></b></div>
+                        <div class="hk-bar"><i class="is-green" t-attf-style="width: {{ summary and summary.staff_width or 0 }}%"/></div>
+                    </div>
+                    <div class="hk-metric">
+                        <div class="hk-metric-top"><span>Active Zones</span><b><t t-esc="summary and summary.active_zones or 0"/> <small>/ <t t-esc="summary and summary.total_zones or 0"/></small></b></div>
+                        <div class="hk-bar"><i class="is-blue" t-attf-style="width: {{ summary and summary.zone_width or 0 }}%"/></div>
+                    </div>
+                    <div class="hk-metric">
+                        <div class="hk-metric-top"><span>Overall Completion Rate</span><b class="is-purple"><t t-esc="summary and summary.completion_rate or 0"/>%</b></div>
+                        <div class="hk-bar"><i class="is-purple" t-attf-style="width: {{ summary and summary.completion_rate or 0 }}%"/></div>
+                    </div>
+                </article>
+                <article class="hk-card hk-alerts">
+                    <h2>Housekeeping Alerts</h2>
+                    <div t-foreach="state.data and state.data.alerts or []" t-as="alert" t-key="alert.level" t-attf-class="hk-alert hk-alert-{{ alert.level }}">
+                        <span class="hk-alert-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8.2v5"/><path d="M12 16.4h.01"/></svg></span>
+                        <span><strong t-esc="alert.title"/><small t-esc="alert.message"/></span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <footer class="hk-footer">
+            <div class="hk-footer-left">
+                <button type="button" class="hk-btn hk-btn-primary" t-on-click="() => this.selectScreen('task_form')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Create Task</button>
+                <button type="button" class="hk-btn hk-btn-ghost" t-on-click="() => this.selectScreen('roster')">Assign Staff</button>
+            </div>
+            <div class="hk-footer-right">
+                <button type="button" class="hk-btn hk-btn-text" t-on-click="() => this.selectScreen('schedule')">View Schedule</button>
+                <button type="button" class="hk-btn hk-btn-text" t-on-click="() => this.selectScreen('performance')">Generate Report</button>
+            </div>
+        </footer>
+    </t>
+
+    <t t-name="housekeeping_management.Roster">
+        <header class="hk-roster-top">
+            <div>
+                <div class="hk-crumbs"><button type="button" t-on-click="() => this.selectScreen('dashboard')">Housekeeping</button><span>›</span><span>Staff &amp; Roster</span></div>
+                <h1>Housekeeping Roster</h1>
+                <p>Manage housekeeping staff, shifts, zone assignments and attendance.</p>
+            </div>
+            <div class="hk-roster-tools">
+                <button type="button" class="hk-chip"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M8 3.5v3.2M16 3.5v3.2M3.5 10h17"/></svg><t t-esc="state.roster and state.roster.date_label or ''"/></button>
+                <button type="button" class="hk-chip hk-desktop-only"><svg viewBox="0 0 24 24"><path d="M4 20.5h16"/><path d="M6.5 20.5V6.2A1.7 1.7 0 0 1 8.2 4.5h5.1a1.7 1.7 0 0 1 1.7 1.7v14.3"/></svg><t t-esc="state.roster and state.roster.facility or 'Main Facility'"/></button>
+                <div class="hk-user hk-desktop-only"><span class="hk-avatar">PM</span><span><strong t-esc="state.roster and state.roster.user_name or 'Priya M.'"/><small t-esc="state.roster and state.roster.user_role or 'Operations Mgr'"/></span></div>
+            </div>
+        </header>
+        <section class="hk-kpis hk-roster-kpis">
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Total Staff</span><i class="hk-kpi-icon hk-kpi-purple"><svg viewBox="0 0 24 24"><circle cx="10" cy="7.2" r="2.8"/><path d="M4 19v-1.2A4 4 0 0 1 8 13.8h4A4 4 0 0 1 16 17.8V19"/></svg></i></div><strong t-esc="rosterKpis and rosterKpis.total_staff or 0"/><p><span>Staff</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Present Today</span><i class="hk-kpi-icon hk-kpi-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8.6 12.2l2.3 2.3 4.5-4.8"/></svg></i></div><strong t-esc="rosterKpis and rosterKpis.present or 0"/><p><span>Staff</span><em class="is-green"><t t-esc="rosterKpis and rosterKpis.present_rate or '0.0'"/>%</em></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Absent / Leave</span><i class="hk-kpi-icon hk-kpi-red"><svg viewBox="0 0 24 24"><path d="M12 4.2l8.2 14.6H3.8L12 4.2z"/><path d="M12 10v4.2"/></svg></i></div><strong t-esc="rosterKpis and rosterKpis.away or 0"/><p><span>Staff</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Unassigned</span><i class="hk-kpi-icon hk-kpi-amber"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6.2 19.2v-1.1A4 4 0 0 1 10.2 14h3.6"/></svg></i></div><strong t-esc="rosterKpis and rosterKpis.unassigned or 0"/><p><span>Staff</span></p></article>
+        </section>
+        <section class="hk-grid hk-roster-grid">
+            <article class="hk-card hk-roster-card">
+                <div class="hk-roster-head">
+                    <h2><i class="hk-live"/>Today's Housekeeping Roster</h2>
+                    <div class="hk-roster-actions">
+                        <label class="hk-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><input type="text" placeholder="Search staff..." t-model="state.rosterSearch"/></label>
+                        <div class="hk-filter-wrap">
+                            <button type="button" class="hk-btn hk-btn-ghost hk-btn-sm" t-on-click="toggleRosterFilter">Filter</button>
+                            <div class="hk-filter-menu" t-if="state.rosterFilterOpen">
+                                <button type="button" t-on-click="() => this.setRosterFilter('all')">All</button>
+                                <button type="button" t-on-click="() => this.setRosterFilter('present')">Present</button>
+                                <button type="button" t-on-click="() => this.setRosterFilter('late')">Late</button>
+                                <button type="button" t-on-click="() => this.setRosterFilter('absent')">Absent</button>
+                            </div>
+                        </div>
+                        <button type="button" class="hk-btn hk-btn-ghost hk-btn-sm" t-on-click="assignShiftPrompt">Assign Shift</button>
+                        <button type="button" class="hk-btn hk-btn-primary hk-btn-sm" t-on-click="addStaff">Add Staff</button>
+                    </div>
+                </div>
+                <div class="hk-table-wrap">
+                    <table class="hk-table hk-roster-table">
+                        <thead><tr><th>Staff &amp; Role</th><th>Shift &amp; Zone</th><th>Attendance</th><th>Current Task</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="rosterRows" t-as="row" t-key="row.id">
+                                <td><span class="hk-staff"><span class="hk-avatar" t-attf-style="background: {{ row.color }}" t-esc="row.initials"/><span class="hk-staff-text"><strong t-esc="row.name"/><small t-esc="row.role"/></span></span></td>
+                                <td><div class="hk-shift"><span><t t-esc="row.shift_name"/> (<t t-esc="row.time_start"/> - <t t-esc="row.time_end"/>)</span><small t-esc="row.zone"/></div></td>
+                                <td><span t-attf-class="hk-pill hk-pill-{{ row.state }}" t-esc="row.state_label"/></td>
+                                <td class="hk-current" t-esc="row.task"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+            <div class="hk-side">
+                <article class="hk-card hk-attend">
+                    <div class="hk-attend-top"><h2>Attendance Overview</h2><b class="is-green"><t t-esc="rosterKpis and rosterKpis.present_rate or '0.0'"/>%</b></div>
+                    <div class="hk-attend-score"><strong><t t-esc="rosterKpis and rosterKpis.present or 0"/><small>/<t t-esc="rosterKpis and rosterKpis.total_staff or 0"/></small></strong></div>
+                    <div class="hk-bar hk-bar-lg"><i class="is-green" t-attf-style="width: {{ rosterKpis and rosterKpis.present_width or 0 }}%"/></div>
+                    <div class="hk-target"><span>Target: <t t-esc="rosterKpis and rosterKpis.target or '95%'"/></span><em t-esc="rosterKpis and rosterKpis.variance or '0%'"/></div>
+                </article>
+                <article class="hk-card hk-shifts">
+                    <h2>Shift Summary</h2>
+                    <div class="hk-shift-block" t-foreach="state.roster and state.roster.shifts or []" t-as="shift" t-key="shift.id">
+                        <div class="hk-shift-top"><span t-esc="shift.name"/><b><t t-esc="shift.count"/> Staff</b></div>
+                        <div class="hk-stack"><i t-foreach="shift.segments" t-as="seg" t-key="seg_index" t-attf-class="is-{{ seg.color }}" t-attf-style="width: {{ seg.width }}%"/></div>
+                    </div>
+                </article>
+                <article class="hk-card hk-roster-alert">
+                    <h2>Roster Alerts</h2>
+                    <div class="hk-alert hk-alert-danger"><span class="hk-alert-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8.2v5"/></svg></span><span><strong t-esc="state.roster and state.roster.alert or ''"/></span></div>
+                </article>
+            </div>
+        </section>
+    </t>
+
+    <t t-name="housekeeping_management.Zones">
+        <header class="hk-roster-top">
+            <div>
+                <div class="hk-crumbs"><button type="button" t-on-click="() => this.selectScreen('dashboard')">Housekeeping</button><span>›</span><span>Zones</span></div>
+                <h1>Zone &amp; Area Management</h1>
+                <p>Define and manage facility zones that require housekeeping.</p>
+            </div>
+            <div class="hk-roster-tools">
+                <button type="button" class="hk-chip">18 Aug 2026</button>
+                <button type="button" class="hk-chip hk-desktop-only">Main Facility</button>
+            </div>
+        </header>
+        <section class="hk-kpis">
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Total Zones</span></div><strong t-esc="state.demo.zones.kpis.total"/><p><span>Zones</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Active Zones</span></div><strong class="is-green" t-esc="state.demo.zones.kpis.active"/><p><span>Zones</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Cleaning Required</span></div><strong class="is-amber" t-esc="state.demo.zones.kpis.cleaning_required"/><p><span>Zones</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Unassigned Zones</span></div><strong class="is-purple" t-esc="state.demo.zones.kpis.unassigned"/><p><span>Zones</span></p></article>
+        </section>
+        <section class="hk-grid hk-roster-grid">
+            <article class="hk-card hk-roster-card">
+                <div class="hk-roster-head">
+                    <h2>Facility Zones</h2>
+                    <div class="hk-roster-actions">
+                        <label class="hk-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><input type="text" placeholder="Search Zone..." t-model="state.zoneSearch"/></label>
+                        <button type="button" class="hk-btn hk-btn-ghost hk-btn-sm">Filter</button>
+                        <button type="button" class="hk-btn hk-btn-primary hk-btn-sm" t-on-click="() => this.selectScreen('zone_form')">+ Add Zone</button>
+                    </div>
+                </div>
+                <div class="hk-table-wrap">
+                    <table class="hk-table">
+                        <thead><tr><th>Zone</th><th>Building / Floor</th><th>Area Type</th><th>Assigned Staff</th><th>Status</th><th>Priority</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="zoneRows" t-as="row" t-key="row.id">
+                                <td class="hk-task-name" t-esc="row.name"/>
+                                <td><t t-esc="row.building"/> / <t t-esc="row.floor"/></td>
+                                <td t-esc="row.area_type"/>
+                                <td><t t-esc="row.staff"/> Staff</td>
+                                <td><span t-attf-class="hk-status hk-zstatus-{{ row.status }}" t-esc="row.status_label"/></td>
+                                <td><span t-attf-class="hk-priority hk-priority-{{ row.priority }}" t-esc="row.priority_label"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+            <div class="hk-side">
+                <article class="hk-card hk-summary">
+                    <h2>Zone Summary</h2>
+                    <div class="hk-metric-top"><span>Total</span><b t-esc="state.demo.zones.kpis.total"/></div>
+                    <div class="hk-metric-top"><span>Active</span><b class="is-green" t-esc="state.demo.zones.kpis.active"/></div>
+                    <div class="hk-metric-top"><span>Cleaning Required</span><b class="is-amber" t-esc="state.demo.zones.kpis.cleaning_required"/></div>
+                    <div class="hk-metric-top"><span>Unassigned</span><b class="is-purple" t-esc="state.demo.zones.kpis.unassigned"/></div>
+                </article>
+                <article class="hk-card hk-summary">
+                    <h2>Cleaning Coverage</h2>
+                    <div class="hk-metric"><div class="hk-metric-top"><span>Daily</span><b t-esc="state.demo.zones.coverage.daily"/></div><div class="hk-bar"><i class="is-blue" t-attf-style="width: {{ state.demo.zones.coverage.daily_width }}%"/></div></div>
+                    <div class="hk-metric"><div class="hk-metric-top"><span>Periodic</span><b t-esc="state.demo.zones.coverage.periodic"/></div><div class="hk-bar"><i class="is-purple" t-attf-style="width: {{ state.demo.zones.coverage.periodic_width }}%"/></div></div>
+                </article>
+                <article class="hk-card hk-alerts">
+                    <h2>Zone Alerts</h2>
+                    <div t-foreach="state.demo.zones.alerts" t-as="alert" t-key="alert.title" t-attf-class="hk-alert hk-alert-{{ alert.level }}"><span><strong t-esc="alert.title"/></span></div>
+                </article>
+            </div>
+        </section>
+    </t>
+
+    <t t-name="housekeeping_management.ZoneForm">
+        <header class="hk-form-top">
+            <button type="button" class="hk-back" t-on-click="() => this.selectScreen('zones')">← Back to Zones</button>
+            <div class="hk-crumbs"><span>Housekeeping</span><span>›</span><span>Zones</span><span>›</span><span>Add Zone</span></div>
+            <h1>Add Zone</h1>
+            <p>Create a new housekeeping zone and define its cleaning requirements.</p>
+        </header>
+        <section class="hk-form-grid">
+            <div class="hk-form-main">
+                <article class="hk-card hk-form-card">
+                    <h2>Zone Information</h2>
+                    <label class="hk-field"><span>Zone Name *</span><input type="text" t-model="state.zoneForm.name"/></label>
+                    <label class="hk-field"><span>Zone ID</span><input type="text" t-model="state.zoneForm.code" readonly="readonly"/></label>
+                    <div class="hk-field-row">
+                        <label class="hk-field"><span>Building / Tower *</span><input type="text" t-model="state.zoneForm.building"/></label>
+                        <label class="hk-field"><span>Floor / Level</span><input type="text" t-model="state.zoneForm.floor"/></label>
+                    </div>
+                    <label class="hk-field"><span>Area Type *</span>
+                        <select t-model="state.zoneForm.area_type">
+                            <option value="public">Public Area</option>
+                            <option value="lobby">Lobby</option>
+                            <option value="common">Common Area</option>
+                            <option value="washroom">Washroom</option>
+                            <option value="parking">Parking</option>
+                            <option value="clubhouse">Clubhouse</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </label>
+                </article>
+                <article class="hk-card hk-form-card">
+                    <h2>Cleaning Configuration</h2>
+                    <div class="hk-field-row">
+                        <label class="hk-field"><span>Frequency *</span>
+                            <select t-model="state.zoneForm.frequency">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="periodic">Periodic</option>
+                            </select>
+                        </label>
+                        <label class="hk-field"><span>Priority</span>
+                            <select t-model="state.zoneForm.priority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="hk-field"><span>Cleaning Type</span>
+                        <select t-model="state.zoneForm.cleaning_type">
+                            <option value="routine">Routine</option>
+                            <option value="deep">Deep Cleaning</option>
+                            <option value="sanitization">Sanitization</option>
+                            <option value="periodic">Periodic</option>
+                        </select>
+                    </label>
+                    <label class="hk-field"><span>Assigned Staff</span>
+                        <select t-model.number="state.zoneForm.primary_staff_id" t-on-change="onZoneStaffChange">
+                            <option value="">Unassigned</option>
+                            <t t-foreach="state.masters.staff or []" t-as="st" t-key="st.id">
+                                <option t-att-value="st.id" t-esc="st.name"/>
+                            </t>
+                        </select>
+                    </label>
+                </article>
+            </div>
+            <div class="hk-side">
+                <article class="hk-card hk-preview">
+                    <span class="hk-status hk-status-assigned">ACTIVE</span>
+                    <h2 t-esc="state.zoneForm.name"/>
+                    <small t-esc="state.zoneForm.code || 'Auto ZN-xxx'"/>
+                    <p><t t-esc="state.zoneForm.building"/> · <t t-esc="state.zoneForm.floor"/></p>
+                    <p t-esc="state.zoneForm.area_type"/>
+                    <p><t t-esc="(state.zoneForm.staff_ids || []).length"/> Members</p>
+                    <span class="hk-priority hk-priority-high" t-esc="state.zoneForm.priority"/>
+                </article>
+                <article class="hk-card hk-preview">
+                    <h2>Schedule Preview</h2>
+                    <p>Frequency: <t t-esc="state.zoneForm.frequency"/></p>
+                    <p>Cleaning Type: <t t-esc="state.zoneForm.cleaning_type"/></p>
+                </article>
+            </div>
+        </section>
+        <footer class="hk-footer">
+            <button type="button" class="hk-btn hk-btn-text" t-on-click="() => this.selectScreen('zones')">Cancel</button>
+            <div class="hk-footer-right">
+                <button type="button" class="hk-btn hk-btn-ghost" t-on-click="() => this.saveDraft('Zone')">Save as Draft</button>
+                <button type="button" class="hk-btn hk-btn-primary" t-on-click="() => this.createEntity('Zone')">Create Zone</button>
+            </div>
+        </footer>
+    </t>
+
+    <t t-name="housekeeping_management.Schedule">
+        <header class="hk-roster-top">
+            <div>
+                <div class="hk-crumbs"><button type="button" t-on-click="() => this.selectScreen('dashboard')">Housekeeping</button><span>›</span><span>Schedule</span></div>
+                <h1>Cleaning Schedule</h1>
+                <p>Plan recurring and one-time cleaning activities.</p>
+            </div>
+            <div class="hk-roster-tools"><button type="button" class="hk-chip">18 Aug 2026</button></div>
+        </header>
+        <section class="hk-kpis">
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Today's Schedule</span></div><strong t-esc="state.demo.schedule.kpis.today"/><p><span>Activities</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Upcoming</span></div><strong t-esc="state.demo.schedule.kpis.upcoming"/><p><span>Next 7 days</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Recurring</span></div><strong t-esc="state.demo.schedule.kpis.recurring"/><p><span>Active plans</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Overdue</span></div><strong class="is-red" t-esc="state.demo.schedule.kpis.overdue"/><p><span>Need attention</span></p></article>
+        </section>
+        <section class="hk-grid hk-roster-grid">
+            <article class="hk-card hk-roster-card">
+                <div class="hk-roster-head">
+                    <div class="hk-view-toggle">
+                        <button type="button" t-att-class="state.scheduleView === 'list' ? 'active' : ''" t-on-click="() => this.setScheduleView('list')">List</button>
+                        <button type="button" t-att-class="state.scheduleView === 'calendar' ? 'active' : ''" t-on-click="() => this.setScheduleView('calendar')">Calendar</button>
+                    </div>
+                    <div class="hk-roster-actions">
+                        <label class="hk-search"><input type="text" placeholder="Search activities..." t-model="state.scheduleSearch"/></label>
+                        <button type="button" class="hk-btn hk-btn-primary hk-btn-sm" t-on-click="() => this.selectScreen('schedule_form')">+ New</button>
+                    </div>
+                </div>
+                <div class="hk-table-wrap" t-if="state.scheduleView === 'list'">
+                    <table class="hk-table">
+                        <thead><tr><th>Activity</th><th>Zone</th><th>Freq</th><th>Staff</th><th>Time</th><th>Next</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="scheduleRows" t-as="row" t-key="row.id" t-att-class="row.overdue ? 'hk-row-overdue' : ''">
+                                <td class="hk-task-name" t-esc="row.activity"/>
+                                <td t-esc="row.zone"/>
+                                <td t-esc="row.freq"/>
+                                <td><span class="hk-staff"><span class="hk-avatar" t-attf-style="background: {{ row.color }}" t-esc="row.initials"/><span t-esc="row.staff"/></span></td>
+                                <td t-esc="row.time"/>
+                                <td t-esc="row.next"/>
+                                <td><span t-attf-class="hk-status hk-status-{{ row.status }}" t-esc="row.status_label"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="hk-calendar-placeholder" t-else="">Calendar view preview for the selected date range.</div>
+            </article>
+            <div class="hk-side">
+                <article class="hk-card hk-summary">
+                    <h2>Schedule Summary</h2>
+                    <div class="hk-metric-top"><span>Today</span><b t-esc="state.demo.schedule.kpis.today"/></div>
+                    <div class="hk-metric-top"><span>Week</span><b t-esc="state.demo.schedule.kpis.upcoming"/></div>
+                    <div class="hk-metric-top"><span>Recurring</span><b t-esc="state.demo.schedule.kpis.recurring"/></div>
+                    <div class="hk-metric-top"><span>Overdue</span><b class="is-red" t-esc="state.demo.schedule.kpis.overdue"/></div>
+                </article>
+                <article class="hk-card hk-summary">
+                    <h2>Upcoming Today</h2>
+                    <div class="hk-timeline" t-foreach="state.demo.schedule.upcoming" t-as="item" t-key="item.time">
+                        <strong t-esc="item.time"/><span t-esc="item.title"/>
+                    </div>
+                </article>
+                <article class="hk-card hk-alerts">
+                    <h2>Alerts</h2>
+                    <div t-foreach="state.demo.schedule.alerts" t-as="alert" t-key="alert.title" t-attf-class="hk-alert hk-alert-{{ alert.level }}">
+                        <span><strong t-esc="alert.title"/><small t-esc="alert.message"/></span>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </t>
+
+    <t t-name="housekeeping_management.ScheduleForm">
+        <header class="hk-form-top">
+            <button type="button" class="hk-back" t-on-click="() => this.selectScreen('schedule')">← Back to Cleaning Schedule</button>
+            <h1>Create Cleaning Schedule</h1>
+            <p>Create a one-time or recurring cleaning schedule for a facility zone.</p>
+        </header>
+        <section class="hk-form-grid">
+            <div class="hk-form-main">
+                <article class="hk-card hk-form-card">
+                    <h2>Cleaning Activity</h2>
+                    <label class="hk-field"><span>Activity</span>
+                        <select t-model.number="state.scheduleForm.activity_id">
+                            <option value="">Select activity...</option>
+                            <t t-foreach="state.masters.activities or []" t-as="act" t-key="act.id">
+                                <option t-att-value="act.id" t-esc="act.name"/>
+                            </t>
+                        </select>
+                    </label>
+                    <label class="hk-field"><span>Description (Optional)</span><textarea t-model="state.scheduleForm.description" placeholder="Enter details about this cleaning task..."/></label>
+                </article>
+                <article class="hk-card hk-form-card">
+                    <h2>Location</h2>
+                    <label class="hk-field"><span>Zone</span>
+                        <select t-model.number="state.scheduleForm.zone_id" t-on-change="onScheduleZoneChange">
+                            <option value="">Select a zone...</option>
+                            <t t-foreach="state.masters.zones or []" t-as="z" t-key="z.id">
+                                <option t-att-value="z.id" t-esc="z.name"/>
+                            </t>
+                        </select>
+                    </label>
+                    <div class="hk-info-box">Building: <t t-esc="state.scheduleForm.building"/><br/>Floor: <t t-esc="state.scheduleForm.floor"/></div>
+                </article>
+                <article class="hk-card hk-form-card">
+                    <h2>Schedule Configuration</h2>
+                    <div class="hk-view-toggle">
+                        <button type="button" t-att-class="state.scheduleForm.mode === 'one_time' ? 'active' : ''" t-on-click="() => this.setScheduleMode('one_time')">One-Time</button>
+                        <button type="button" t-att-class="state.scheduleForm.mode === 'recurring' ? 'active' : ''" t-on-click="() => this.setScheduleMode('recurring')">Recurring</button>
+                    </div>
+                    <div class="hk-field-row">
+                        <label class="hk-field"><span>Frequency</span>
+                            <select t-model="state.scheduleForm.frequency">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </label>
+                        <label class="hk-field"><span>Start Time (hours)</span><input type="number" step="0.5" t-model.number="state.scheduleForm.time_start"/></label>
+                    </div>
+                    <div class="hk-day-picker">
+                        <button type="button" t-foreach="state.weekDays" t-as="day" t-key="day" t-att-class="isScheduleDayActive(day) ? 'active' : ''" t-on-click="() => this.toggleScheduleDay(day)" t-esc="day.replace('2','')"/>
+                    </div>
+                    <div class="hk-field-row">
+                        <label class="hk-field"><span>Start Date</span><input type="date" t-model="state.scheduleForm.start_date"/></label>
+                        <label class="hk-field"><span>End Date (Optional)</span><input type="date" t-model="state.scheduleForm.end_date"/></label>
+                    </div>
+                </article>
+                <article class="hk-card hk-form-card">
+                    <h2>Staff Assignment</h2>
+                    <label class="hk-field"><span>Assigned Staff</span>
+                        <select t-model.number="state.scheduleForm.primary_staff_id" t-on-change="onScheduleStaffChange">
+                            <option value="">Assign later</option>
+                            <t t-foreach="state.masters.staff or []" t-as="st" t-key="st.id">
+                                <option t-att-value="st.id" t-esc="st.name"/>
+                            </t>
+                        </select>
+                    </label>
+                    <label class="hk-field"><span>Shift</span>
+                        <select t-model.number="state.scheduleForm.shift_id">
+                            <option value="">Select shift...</option>
+                            <t t-foreach="state.masters.shifts or []" t-as="s" t-key="s.id">
+                                <option t-att-value="s.id" t-esc="s.name"/>
+                            </t>
+                        </select>
+                    </label>
+                    <label class="hk-field"><span>Checklist</span>
+                        <select t-model.number="state.scheduleForm.checklist_template_id">
+                            <option value="">Select checklist...</option>
+                            <t t-foreach="state.masters.checklists or []" t-as="c" t-key="c.id">
+                                <option t-att-value="c.id" t-esc="c.name"/>
+                            </t>
+                        </select>
+                    </label>
+                    <label class="hk-field"><span>Priority</span>
+                        <select t-model="state.scheduleForm.priority">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </label>
+                    <label class="hk-field"><span>Special Instructions</span><textarea t-model="state.scheduleForm.instructions" placeholder="e.g., Use caution around wet floor signs near entrance..."/></label>
+                </article>
+            </div>
+            <div class="hk-side">
+                <article class="hk-card hk-preview">
+                    <h2>Schedule Preview</h2>
+                    <div class="hk-info-box">NEXT: <t t-esc="state.scheduleForm.start_date or 'Today'"/></div>
+                    <p>Frequency: <t t-esc="state.scheduleForm.frequency"/></p>
+                    <p>Building: <t t-esc="state.scheduleForm.building"/></p>
+                    <span class="hk-priority hk-priority-medium" t-esc="state.scheduleForm.priority"/>
+                </article>
+            </div>
+        </section>
+        <footer class="hk-footer">
+            <button type="button" class="hk-btn hk-btn-text" t-on-click="() => this.selectScreen('schedule')">Cancel</button>
+            <div class="hk-footer-right">
+                <button type="button" class="hk-btn hk-btn-ghost" t-on-click="() => this.saveDraft('Schedule')">Save Draft</button>
+                <button type="button" class="hk-btn hk-btn-primary" t-on-click="() => this.createEntity('Schedule')">Create Schedule</button>
+            </div>
+        </footer>
+    </t>
+
+    <t t-name="housekeeping_management.Tasks">
+        <header class="hk-roster-top">
+            <div>
+                <div class="hk-crumbs"><button type="button" t-on-click="() => this.selectScreen('dashboard')">Housekeeping</button><span>›</span><span>Tasks</span></div>
+                <h1>Cleaning Tasks</h1>
+                <p>Manage assigned cleaning tasks and track daily housekeeping operations.</p>
+            </div>
+            <div class="hk-roster-tools"><button type="button" class="hk-chip">18 Aug 2026</button></div>
+        </header>
+        <section class="hk-kpis">
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Today's Tasks</span></div><strong t-esc="state.demo.tasks.kpis.today"/><p><span><t t-esc="state.demo.tasks.kpis.completed"/> Completed</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>In Progress</span></div><strong t-esc="state.demo.tasks.kpis.in_progress"/><p><span>Tasks</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Pending</span></div><strong t-esc="state.demo.tasks.kpis.pending"/><p><span>Tasks</span></p></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Overdue</span></div><strong class="is-red" t-esc="state.demo.tasks.kpis.overdue"/><p><span>Tasks</span></p></article>
+        </section>
+        <section class="hk-grid hk-roster-grid">
+            <article class="hk-card hk-roster-card">
+                <div class="hk-roster-head">
+                    <div class="hk-tabs">
+                        <button type="button" t-att-class="state.taskTab === 'all' ? 'active' : ''" t-on-click="() => this.setTaskTab('all')">All</button>
+                        <button type="button" t-att-class="state.taskTab === 'pending' ? 'active' : ''" t-on-click="() => this.setTaskTab('pending')">Pending</button>
+                        <button type="button" t-att-class="state.taskTab === 'assigned' ? 'active' : ''" t-on-click="() => this.setTaskTab('assigned')">Assigned</button>
+                        <button type="button" t-att-class="state.taskTab === 'in_progress' ? 'active' : ''" t-on-click="() => this.setTaskTab('in_progress')">In Progress</button>
+                        <button type="button" t-att-class="state.taskTab === 'completed' ? 'active' : ''" t-on-click="() => this.setTaskTab('completed')">Completed</button>
+                        <button type="button" t-att-class="state.taskTab === 'overdue' ? 'active' : ''" t-on-click="() => this.setTaskTab('overdue')">Overdue</button>
+                    </div>
+                    <div class="hk-roster-actions">
+                        <label class="hk-search"><input type="text" placeholder="Search tasks..." t-model="state.taskSearch"/></label>
+                        <button type="button" class="hk-btn hk-btn-primary hk-btn-sm" t-on-click="() => this.selectScreen('task_form')">+ Create Task</button>
+                    </div>
+                </div>
+                <div class="hk-table-wrap">
+                    <table class="hk-table">
+                        <thead><tr><th>Task</th><th>Zone</th><th>Assigned Staff</th><th>Scheduled</th><th>Priority</th><th>Status</th><th>Progress</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="taskRows" t-as="row" t-key="row.id">
+                                <td><span class="hk-staff-text"><strong t-esc="row.name"/><small t-esc="row.source"/></span></td>
+                                <td t-esc="row.zone"/>
+                                <td><span class="hk-staff"><span class="hk-avatar" t-attf-style="background: {{ row.color }}" t-esc="row.initials"/><span t-esc="row.staff"/></span></td>
+                                <td t-esc="row.time"/>
+                                <td><span t-attf-class="hk-priority hk-priority-{{ row.priority }}" t-esc="row.priority_label"/></td>
+                                <td><span t-attf-class="hk-status hk-status-{{ row.status }}" t-esc="row.status_label"/></td>
+                                <td><div class="hk-mini-progress"><i t-attf-style="width: {{ row.progress }}%"/><span><t t-esc="row.progress"/>%</span></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+            <div class="hk-side">
+                <article class="hk-card hk-summary">
+                    <h2>Task Summary</h2>
+                    <div class="hk-metric-top"><span>Total</span><b t-esc="state.demo.tasks.kpis.today"/></div>
+                    <div class="hk-metric-top"><span>Completed</span><b class="is-green" t-esc="state.demo.tasks.kpis.completed"/></div>
+                    <div class="hk-metric-top"><span>In Progress</span><b t-esc="state.demo.tasks.kpis.in_progress"/></div>
+                    <div class="hk-metric-top"><span>Overdue</span><b class="is-red" t-esc="state.demo.tasks.kpis.overdue"/></div>
+                </article>
+                <article class="hk-card hk-summary">
+                    <h2>Staff Workload</h2>
+                    <div class="hk-metric-top" t-foreach="state.demo.tasks.workload" t-as="w" t-key="w.name"><span t-esc="w.name"/><b t-esc="w.label"/></div>
+                </article>
+                <article class="hk-card hk-alerts">
+                    <h2>Task Alerts</h2>
+                    <div t-foreach="state.demo.tasks.alerts" t-as="alert" t-key="alert.title" t-attf-class="hk-alert hk-alert-{{ alert.level }}"><span><strong t-esc="alert.title"/></span></div>
+                </article>
+            </div>
+        </section>
+    </t>
+
+    <t t-name="housekeeping_management.TaskForm">
+        <header class="hk-form-top">
+            <div class="hk-crumbs"><span>Housekeeping</span><span>›</span><span>Tasks</span><span>›</span><span>New Task</span></div>
+            <h1>Create Cleaning Task</h1>
+            <p>Create and assign a cleaning task for a facility zone.</p>
+            <div class="hk-view-toggle">
+                <button type="button" t-att-class="state.taskForm.mode === 'manual' ? 'active' : ''" t-on-click="() => this.setTaskMode('manual')">Manual Task</button>
+                <button type="button" t-att-class="state.taskForm.mode === 'schedule' ? 'active' : ''" t-on-click="() => this.setTaskMode('schedule')">Schedule Generated</button>
+            </div>
+        </header>
+        <section class="hk-form-grid">
+            <div class="hk-form-main">
+                <article class="hk-card hk-form-card">
+                    <h2>Task Information</h2>
+                    <label class="hk-field"><span>Task Name</span><input type="text" t-model="state.taskForm.name"/></label>
+                    <label class="hk-field"><span>Cleaning Activity</span>
+                        <select t-model.number="state.taskForm.activity_id">
+                            <option value="">Select Activity</option>
+                            <t t-foreach="state.masters.activities or []" t-as="act" t-key="act.id">
+                                <option t-att-value="act.id" t-esc="act.name"/>
+                            </t>
+                        </select>
+                    </label>
+                    <label class="hk-field"><span>Description</span><textarea t-model="state.taskForm.description" placeholder="Provide detailed instructions..."/></label>
+                    <label class="hk-field"><span>Priority</span>
+                        <select t-model="state.taskForm.priority">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </label>
+                    <label class="hk-field"><span>Assigned Staff</span>
+                        <select t-model.number="state.taskForm.staff_id">
+                            <option value="">Unassigned</option>
+                            <t t-foreach="state.masters.staff or []" t-as="st" t-key="st.id">
+                                <option t-att-value="st.id" t-esc="st.name"/>
+                            </t>
+                        </select>
+                    </label>
+                </article>
+                <article class="hk-card hk-form-card">
+                    <h2>Location</h2>
+                    <label class="hk-field"><span>Zone</span>
+                        <select t-model.number="state.taskForm.zone_id" t-on-change="onTaskZoneChange">
+                            <option value="">Select Zone</option>
+                            <t t-foreach="state.masters.zones or []" t-as="z" t-key="z.id">
+                                <option t-att-value="z.id" t-esc="z.name"/>
+                            </t>
+                        </select>
+                    </label>
+                    <div class="hk-info-box">SELECTED LOCATION: <t t-esc="state.taskForm.building"/>, <t t-esc="state.taskForm.floor"/></div>
+                </article>
+            </div>
+            <div class="hk-side">
+                <article class="hk-card hk-preview">
+                    <h2>Task Summary</h2>
+                    <p>Task: <t t-esc="state.taskForm.name"/></p>
+                    <p>Building: <t t-esc="state.taskForm.building"/></p>
+                    <p>Floor: <t t-esc="state.taskForm.floor"/></p>
+                    <span class="hk-priority hk-priority-high" t-esc="state.taskForm.priority"/>
+                    <span class="hk-status hk-status-assigned">NOT STARTED</span>
+                    <div class="hk-stack-btns">
+                        <button type="button" class="hk-btn hk-btn-primary" t-on-click="() => this.createEntity('Task')">Create Task</button>
+                        <button type="button" class="hk-btn hk-btn-ghost" t-on-click="() => this.saveDraft('Task')">Save Draft</button>
+                        <button type="button" class="hk-btn hk-btn-text" t-on-click="() => this.selectScreen('tasks')">Cancel</button>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </t>
+
+    <t t-name="housekeeping_management.Checklist">
+        <header class="hk-form-top">
+            <button type="button" class="hk-back" t-on-click="() => this.selectScreen('tasks')">← Back to Tasks</button>
+            <div class="hk-crumbs"><span>Housekeeping</span><span>›</span><span>Checklist</span></div>
+            <h1>Digital Cleaning Checklist</h1>
+            <p>Complete the assigned cleaning activities and submit the task for verification.</p>
+        </header>
+        <article class="hk-card hk-meta-card">
+            <div class="hk-meta-grid">
+                <div><small>Task</small><strong t-esc="state.demo.checklist.task"/></div>
+                <div><small>Task ID</small><strong t-esc="state.demo.checklist.task_id"/></div>
+                <div><small>Zone</small><strong t-esc="state.demo.checklist.zone"/></div>
+                <div><small>Status</small><span class="hk-status hk-status-in_progress" t-esc="state.demo.checklist.status"/></div>
+                <div><small>Assigned Staff</small><strong t-esc="state.demo.checklist.staff"/></div>
+                <div><small>Date &amp; Time</small><strong t-esc="state.demo.checklist.datetime"/></div>
+                <div><small>Priority</small><span class="hk-priority hk-priority-medium" t-esc="state.demo.checklist.priority"/></div>
+            </div>
+            <div class="hk-progress-label">Checklist Progress <b><t t-esc="state.demo.checklist.done"/> of <t t-esc="state.demo.checklist.total"/> completed (<t t-esc="state.demo.checklist.progress"/>%)</b></div>
+            <div class="hk-bar hk-bar-lg"><i class="is-purple" t-attf-style="width: {{ state.demo.checklist.progress }}%"/></div>
+        </article>
+        <section class="hk-form-grid">
+            <article class="hk-card hk-form-card">
+                <h2>Action Items</h2>
+                <div class="hk-check-section" t-foreach="state.demo.checklist.sections" t-as="sec" t-key="sec.id">
+                    <h3><t t-esc="sec.title"/> (<t t-esc="sec.done"/>/<t t-esc="sec.total"/>)</h3>
+                    <label class="hk-check-item" t-foreach="sec.items" t-as="item" t-key="item.id">
+                        <input type="checkbox" t-att-checked="item.done" t-on-change="() => this.toggleChecklistItem(sec.id, item.id)"/>
+                        <span t-att-class="item.done ? 'is-done' : ''" t-esc="item.label"/>
+                        <em t-if="item.done">Completed</em>
+                    </label>
+                </div>
+            </article>
+            <div class="hk-side">
+                <article class="hk-card hk-preview"><h2>Instructions</h2><p t-esc="state.demo.checklist.instructions"/></article>
+                <article class="hk-card hk-preview"><h2>Staff Remarks</h2><textarea t-model="state.checklistRemarks" placeholder="Add any notes, observations, or delays here..."/></article>
+            </div>
+        </section>
+        <footer class="hk-footer">
+            <span/>
+            <div class="hk-footer-right">
+                <button type="button" class="hk-btn hk-btn-ghost" t-on-click="() => this.saveDraft('Checklist')">Save Progress</button>
+                <button type="button" class="hk-btn hk-btn-primary" t-on-click="submitChecklist">Submit Checklist</button>
+            </div>
+        </footer>
+    </t>
+
+    <t t-name="housekeeping_management.Verification">
+        <header class="hk-roster-top">
+            <div>
+                <div class="hk-crumbs"><button type="button" t-on-click="() => this.selectScreen('dashboard')">Housekeeping</button><span>›</span><span>Verification</span></div>
+                <h1>Supervisor Verification</h1>
+                <p>Inspect completed housekeeping work and approve or reject tasks.</p>
+            </div>
+        </header>
+        <div class="hk-banner"><t t-esc="state.demo.verification.banner"/></div>
+        <section class="hk-kpis hk-kpi-3">
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Pending Review</span></div><strong t-esc="state.demo.verification.kpis.pending"/></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Approved Today</span></div><strong class="is-green" t-esc="state.demo.verification.kpis.approved"/></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Needs Rework</span></div><strong class="is-red" t-esc="state.demo.verification.kpis.rework"/></article>
+        </section>
+        <section class="hk-verify-layout">
+            <article class="hk-card hk-roster-card">
+                <div class="hk-tabs">
+                    <button type="button" t-att-class="state.verifyTab === 'pending' ? 'active' : ''" t-on-click="() => this.setVerifyTab('pending')">Pending Review</button>
+                    <button type="button" t-att-class="state.verifyTab === 'all' ? 'active' : ''" t-on-click="() => this.setVerifyTab('all')">All</button>
+                    <button type="button" t-att-class="state.verifyTab === 'approved' ? 'active' : ''" t-on-click="() => this.setVerifyTab('approved')">Approved</button>
+                    <button type="button" t-att-class="state.verifyTab === 'rework' ? 'active' : ''" t-on-click="() => this.setVerifyTab('rework')">Rework Required</button>
+                </div>
+                <div class="hk-verify-row" t-foreach="verifyRows" t-as="row" t-key="row.id" t-on-click="() => this.selectVerifyRow(row)">
+                    <div><strong t-esc="row.name"/><small t-esc="row.zone"/></div>
+                    <div><span t-esc="row.staff"/><small t-esc="row.completed"/></div>
+                    <div t-esc="row.progress"/>
+                    <span t-attf-class="hk-status hk-vstatus-{{ row.status }}" t-esc="row.status_label"/>
+                </div>
+            </article>
+            <article class="hk-card hk-verify-detail">
+                <div class="hk-attend-top">
+                    <div><h2 t-esc="state.verifySelected.name"/><small t-esc="state.verifySelected.zone"/></div>
+                    <span class="hk-status hk-vstatus-pending">PENDING REVIEW</span>
+                </div>
+                <div class="hk-meta-grid hk-meta-grid-sm">
+                    <div><small>Activity</small><strong t-esc="state.verifySelected.activity"/></div>
+                    <div><small>Staff</small><strong t-esc="state.verifySelected.staff"/></div>
+                    <div><small>Scheduled</small><strong t-esc="state.verifySelected.scheduled"/></div>
+                    <div><small>Completed</small><strong t-esc="state.verifySelected.completed"/></div>
+                </div>
+                <h3>Checklist Review</h3>
+                <ul class="hk-check-list"><li t-foreach="state.verifySelected.checklist" t-as="c" t-key="c" t-esc="c"/></ul>
+                <p class="is-green" t-esc="state.verifySelected.progress"/>
+                <div class="hk-alert hk-alert-info"><strong t-esc="state.verifySelected.issues"/></div>
+                <h3>Evidence Photos</h3>
+                <div class="hk-photo-row"><span>Before</span><span>After</span><span>Additional</span></div>
+                <h3>Staff Remarks</h3>
+                <p t-esc="state.verifySelected.remarks"/>
+                <label class="hk-field"><span>Supervisor Comment</span><textarea t-model="state.supervisorComment" placeholder="Add verification comments..."/></label>
+                <div class="hk-stack-btns hk-row-btns">
+                    <button type="button" class="hk-btn hk-btn-danger" t-on-click="rejectTask">Reject / Rework</button>
+                    <button type="button" class="hk-btn hk-btn-primary" t-on-click="approveTask">Approve Task</button>
+                </div>
+            </article>
+        </section>
+    </t>
+
+    <t t-name="housekeeping_management.Performance">
+        <header class="hk-roster-top">
+            <div>
+                <div class="hk-crumbs"><button type="button" t-on-click="() => this.selectScreen('dashboard')">Housekeeping</button><span>›</span><span>Performance</span></div>
+                <h1>Consumables &amp; Performance</h1>
+                <p>Track housekeeping materials and measure operational performance.</p>
+            </div>
+        </header>
+        <section class="hk-kpis">
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Tasks Completed</span></div><strong t-esc="state.demo.performance.kpis.completed"/></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Completion Rate</span></div><strong><t t-esc="state.demo.performance.kpis.completion_rate"/>%</strong></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Low Stock Items</span></div><strong class="is-red" t-esc="state.demo.performance.kpis.low_stock"/></article>
+            <article class="hk-card hk-kpi"><div class="hk-kpi-head"><span>Consumables Used</span></div><strong t-esc="state.demo.performance.kpis.consumables_used"/></article>
+        </section>
+        <section class="hk-grid hk-roster-grid">
+            <div class="hk-form-main">
+                <article class="hk-card hk-roster-card">
+                    <h2>Staff Performance</h2>
+                    <div class="hk-table-wrap">
+                        <table class="hk-table">
+                            <thead><tr><th>Staff</th><th>Assigned</th><th>Completed</th><th>Pending</th><th>Progress</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="state.demo.performance.staff" t-as="row" t-key="row.id">
+                                    <td class="hk-task-name" t-esc="row.name"/>
+                                    <td t-esc="row.assigned"/>
+                                    <td t-esc="row.completed"/>
+                                    <td t-esc="row.pending"/>
+                                    <td><div class="hk-mini-progress"><i t-attf-style="width: {{ row.rate }}%"/><span><t t-esc="row.rate"/>%</span></div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+                <article class="hk-card hk-roster-card">
+                    <h2>Consumables</h2>
+                    <div class="hk-table-wrap">
+                        <table class="hk-table">
+                            <thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Used</th><th>Unit</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="state.demo.performance.consumables" t-as="row" t-key="row.id">
+                                    <td class="hk-task-name" t-esc="row.name"/>
+                                    <td t-esc="row.category"/>
+                                    <td t-esc="row.stock"/>
+                                    <td t-esc="row.used"/>
+                                    <td t-esc="row.unit"/>
+                                    <td><span t-attf-class="hk-status hk-stock-{{ row.status }}" t-esc="row.status_label"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+            <div class="hk-side">
+                <article class="hk-card hk-alerts">
+                    <h2>Low Stock Alerts</h2>
+                    <div t-foreach="state.demo.performance.alerts" t-as="alert" t-key="alert.title" t-attf-class="hk-alert hk-alert-{{ alert.level }}"><span><strong t-esc="alert.title"/></span></div>
+                </article>
+                <article class="hk-card hk-summary">
+                    <h2>Recent Activities</h2>
+                    <div class="hk-timeline" t-foreach="state.demo.performance.activities" t-as="a" t-key="a.text">
+                        <strong t-esc="a.text"/><span t-esc="a.time"/>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </t>
+</templates>

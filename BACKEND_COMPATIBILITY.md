@@ -30,6 +30,7 @@ Do not change model/method names or action tags without matching backend changes
 - `fire_safety_management.action_incidents` (fire_safety_management)
 - `fire_safety_management.action_inspections` (fire_safety_management)
 - `fire_safety_management.action_reports` (fire_safety_management)
+- `housekeeping_management.dashboard` (housekeeping_management)
 - `integration_iot_management.action_automation` (integration_iot_management)
 - `integration_iot_management.action_dashboard` (integration_iot_management)
 - `integration_iot_management.action_devices` (integration_iot_management)
@@ -72,6 +73,15 @@ Do not change model/method names or action tags without matching backend changes
 - `compliance.dashboard.get_dashboard_data` — compliance_audit_management
 - `fire.safety.dashboard.compute_compliance` — fire_safety_management
 - `fire.safety.dashboard.get_dashboard_data` — fire_safety_management
+- `hk.dashboard.get_checklist_data` — housekeeping_management
+- `hk.dashboard.get_dashboard_data` — housekeeping_management
+- `hk.dashboard.get_performance_data` — housekeeping_management
+- `hk.dashboard.get_roster_data` — housekeeping_management
+- `hk.dashboard.get_schedule_data` — housekeeping_management
+- `hk.dashboard.get_tasks_data` — housekeeping_management
+- `hk.dashboard.get_verification_data` — housekeeping_management
+- `hk.dashboard.get_verification_detail` — housekeeping_management
+- `hk.dashboard.get_zones_data` — housekeeping_management
 - `integration.iot.automation.execution.action_manual_override` — integration_iot_management
 - `integration.iot.dashboard.get_automation_data` — integration_iot_management
 - `integration.iot.dashboard.get_dashboard_data` — integration_iot_management
