@@ -101,94 +101,94 @@
     </t>
 
     <t t-name="housekeeping_management.ScreenDashboard">
-        <header class="hk-top">
+                <header class="hk-top">
             <h1>Housekeeping Dashboard</h1>
             <div class="hk-top-actions hk-desktop-only">
-                <button type="button" class="hk-icon-btn" title="Calendar" t-on-click="() => this.selectScreen('schedule')">
-                    <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M8 3.5v3.2M16 3.5v3.2M3.5 10h17"/></svg>
-                </button>
-                <button type="button" class="hk-icon-btn hk-bell" title="Alerts">
-                    <svg viewBox="0 0 24 24"><path d="M6.2 9.2a5.8 5.8 0 1 1 11.6 0c0 6.3 2.6 6.6 2.6 8.4H3.6c0-1.8 2.6-2.1 2.6-8.4"/><path d="M10 20.2a2 2 0 0 0 4 0"/></svg>
-                    <span class="hk-dot"/>
-                </button>
-            </div>
-        </header>
+                        <button type="button" class="hk-icon-btn" title="Calendar" t-on-click="() => this.selectScreen('schedule')">
+                            <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M8 3.5v3.2M16 3.5v3.2M3.5 10h17"/></svg>
+                        </button>
+                        <button type="button" class="hk-icon-btn hk-bell" title="Alerts">
+                            <svg viewBox="0 0 24 24"><path d="M6.2 9.2a5.8 5.8 0 1 1 11.6 0c0 6.3 2.6 6.6 2.6 8.4H3.6c0-1.8 2.6-2.1 2.6-8.4"/><path d="M10 20.2a2 2 0 0 0 4 0"/></svg>
+                            <span class="hk-dot"/>
+                        </button>
+                    </div>
+                </header>
 
-        <section class="hk-kpis">
-            <article class="hk-card hk-kpi">
+                    <section class="hk-kpis">
+                        <article class="hk-card hk-kpi">
                 <div class="hk-kpi-head"><span>Total Staff</span><i class="hk-kpi-icon hk-kpi-purple"><svg viewBox="0 0 24 24"><path d="M16.5 20.5v-1.8a3.6 3.6 0 0 0-3.6-3.6H7.1a3.6 3.6 0 0 0-3.6 3.6v1.8"/><circle cx="10" cy="7.2" r="2.8"/></svg></i></div>
-                <strong t-esc="kpis and kpis.total_staff or 0"/>
+                            <strong t-esc="kpis and kpis.total_staff or 0"/>
                 <p><span>Staff</span><em class="is-green"><t t-esc="kpis and kpis.present or 0"/> Present</em></p>
-            </article>
-            <article class="hk-card hk-kpi">
+                        </article>
+                        <article class="hk-card hk-kpi">
                 <div class="hk-kpi-head"><span>Today's Tasks</span><i class="hk-kpi-icon hk-kpi-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8.6 12.2l2.3 2.3 4.5-4.8"/></svg></i></div>
-                <strong t-esc="kpis and kpis.today_tasks or 0"/>
+                            <strong t-esc="kpis and kpis.today_tasks or 0"/>
                 <p><span>Tasks</span><em class="is-green"><t t-esc="kpis and kpis.completed or 0"/> Completed</em></p>
-            </article>
-            <article class="hk-card hk-kpi">
+                        </article>
+                        <article class="hk-card hk-kpi">
                 <div class="hk-kpi-head"><span>Pending/Overdue</span><i class="hk-kpi-icon hk-kpi-amber"><svg viewBox="0 0 24 24"><path d="M12 4.2l8.2 14.6H3.8L12 4.2z"/><path d="M12 10v4.2"/><path d="M12 16.8h.01"/></svg></i></div>
-                <strong t-esc="kpis and kpis.pending or 0"/>
+                            <strong t-esc="kpis and kpis.pending or 0"/>
                 <p><span>Pending</span><em class="is-red"><t t-esc="kpis and kpis.overdue or 0"/> Overdue</em></p>
-            </article>
-            <article class="hk-card hk-kpi">
+                        </article>
+                        <article class="hk-card hk-kpi">
                 <div class="hk-kpi-head"><span>Verification</span><i class="hk-kpi-icon hk-kpi-orange"><svg viewBox="0 0 24 24"><rect x="6" y="3.8" width="12" height="16.4" rx="2"/><path d="M9 11h6M9 14.5h4"/></svg></i></div>
-                <strong t-esc="kpis and kpis.verification or 0"/>
-                <p><span>Tasks</span><em class="is-muted">Pending Review</em></p>
-            </article>
-        </section>
+                            <strong t-esc="kpis and kpis.verification or 0"/>
+                            <p><span>Tasks</span><em class="is-muted">Pending Review</em></p>
+                        </article>
+                    </section>
 
-        <section class="hk-grid">
-            <article class="hk-card hk-ops">
-                <h2>Today's Cleaning Operations</h2>
+                    <section class="hk-grid">
+                        <article class="hk-card hk-ops">
+                            <h2>Today's Cleaning Operations</h2>
                 <div class="hk-table-wrap">
-                    <table class="hk-table">
-                        <thead>
+                            <table class="hk-table">
+                                <thead>
                             <tr><th>Cleaning Task</th><th>Zone</th><th>Assigned Staff</th><th>Scheduled</th><th class="is-right">Status</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr t-foreach="state.data and state.data.operations or []" t-as="op" t-key="op.id">
-                                <td class="hk-task-name" t-esc="op.name"/>
-                                <td t-esc="op.zone"/>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="state.data and state.data.operations or []" t-as="op" t-key="op.id">
+                                        <td class="hk-task-name" t-esc="op.name"/>
+                                        <td t-esc="op.zone"/>
                                 <td><span class="hk-staff"><span class="hk-avatar" t-attf-style="background: {{ op.color }}" t-esc="op.initials"/><span t-esc="op.staff"/></span></td>
-                                <td t-esc="op.time"/>
+                                        <td t-esc="op.time"/>
                                 <td class="is-right"><span t-attf-class="hk-status hk-status-{{ op.status }}" t-esc="op.status_label"/></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    </tr>
+                                </tbody>
+                            </table>
                 </div>
-            </article>
-            <div class="hk-side">
-                <article class="hk-card hk-summary">
-                    <h2>Housekeeping Summary</h2>
-                    <div class="hk-metric">
+                        </article>
+                        <div class="hk-side">
+                            <article class="hk-card hk-summary">
+                                <h2>Housekeeping Summary</h2>
+                                <div class="hk-metric">
                         <div class="hk-metric-top"><span>Staff Present</span><b><t t-esc="summary and summary.present or 0"/> <small>/ <t t-esc="summary and summary.total_staff or 0"/></small></b></div>
-                        <div class="hk-bar"><i class="is-green" t-attf-style="width: {{ summary and summary.staff_width or 0 }}%"/></div>
-                    </div>
-                    <div class="hk-metric">
+                                    <div class="hk-bar"><i class="is-green" t-attf-style="width: {{ summary and summary.staff_width or 0 }}%"/></div>
+                                </div>
+                                <div class="hk-metric">
                         <div class="hk-metric-top"><span>Active Zones</span><b><t t-esc="summary and summary.active_zones or 0"/> <small>/ <t t-esc="summary and summary.total_zones or 0"/></small></b></div>
-                        <div class="hk-bar"><i class="is-blue" t-attf-style="width: {{ summary and summary.zone_width or 0 }}%"/></div>
-                    </div>
-                    <div class="hk-metric">
+                                    <div class="hk-bar"><i class="is-blue" t-attf-style="width: {{ summary and summary.zone_width or 0 }}%"/></div>
+                                </div>
+                                <div class="hk-metric">
                         <div class="hk-metric-top"><span>Overall Completion Rate</span><b class="is-purple"><t t-esc="summary and summary.completion_rate or 0"/>%</b></div>
-                        <div class="hk-bar"><i class="is-purple" t-attf-style="width: {{ summary and summary.completion_rate or 0 }}%"/></div>
-                    </div>
-                </article>
-                <article class="hk-card hk-alerts">
-                    <h2>Housekeeping Alerts</h2>
-                    <div t-foreach="state.data and state.data.alerts or []" t-as="alert" t-key="alert.level" t-attf-class="hk-alert hk-alert-{{ alert.level }}">
+                                    <div class="hk-bar"><i class="is-purple" t-attf-style="width: {{ summary and summary.completion_rate or 0 }}%"/></div>
+                                </div>
+                            </article>
+                            <article class="hk-card hk-alerts">
+                                <h2>Housekeeping Alerts</h2>
+                                <div t-foreach="state.data and state.data.alerts or []" t-as="alert" t-key="alert.level" t-attf-class="hk-alert hk-alert-{{ alert.level }}">
                         <span class="hk-alert-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8.2v5"/><path d="M12 16.4h.01"/></svg></span>
                         <span><strong t-esc="alert.title"/><small t-esc="alert.message"/></span>
-                    </div>
-                </article>
-            </div>
-        </section>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
 
-        <footer class="hk-footer">
-            <div class="hk-footer-left">
+                    <footer class="hk-footer">
+                        <div class="hk-footer-left">
                 <button type="button" class="hk-btn hk-btn-primary" t-on-click="() => this.selectScreen('task_form')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Create Task</button>
                 <button type="button" class="hk-btn hk-btn-ghost" t-on-click="() => this.selectScreen('roster')">Assign Staff</button>
-            </div>
-            <div class="hk-footer-right">
+                        </div>
+                        <div class="hk-footer-right">
                 <button type="button" class="hk-btn hk-btn-text" t-on-click="() => this.selectScreen('schedule')">View Schedule</button>
                 <button type="button" class="hk-btn hk-btn-text" t-on-click="() => this.selectScreen('performance')">Generate Report</button>
             </div>
@@ -787,9 +787,9 @@
             <div class="hk-footer-right">
                 <button type="button" class="hk-btn hk-btn-ghost" t-on-click="() => this.saveDraft('Checklist')">Save Progress</button>
                 <button type="button" class="hk-btn hk-btn-primary" t-on-click="submitChecklist">Submit Checklist</button>
-            </div>
-        </footer>
-    </t>
+                        </div>
+                    </footer>
+                </t>
 
     <t t-name="housekeeping_management.Verification">
         <header class="hk-roster-top">
@@ -845,8 +845,8 @@
                     <button type="button" class="hk-btn hk-btn-primary" t-on-click="approveTask">Approve Task</button>
                 </div>
             </article>
-        </section>
-    </t>
+                    </section>
+                </t>
 
     <t t-name="housekeeping_management.Performance">
         <header class="hk-roster-top">
@@ -911,7 +911,7 @@
                         <strong t-esc="a.text"/><span t-esc="a.time"/>
                     </div>
                 </article>
-            </div>
+        </div>
         </section>
     </t>
 </templates>

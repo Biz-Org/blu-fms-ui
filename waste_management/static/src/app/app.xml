@@ -1,0 +1,1177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<t t-name="waste_management.App">
+    <div class="o_wm_app">
+        <aside class="wm-sidebar" t-att-class="{'is-open': state.menuOpen}">
+            <div class="wm-brand">
+                <div class="wm-brand-mark"><i class="fa fa-recycle"/></div>
+                <div>
+                    <div class="wm-brand-title">FMS Waste</div>
+                    <div class="wm-brand-sub">Enterprise Management</div>
+                </div>
+            </div>
+            <nav class="wm-nav">
+                <t t-foreach="nav" t-as="item" t-key="item.id">
+                    <button type="button" class="wm-nav-item" t-att-class="{'active': isNavActive(item.id)}" t-on-click="() => this.go(item.id)">
+                        <i t-att-class="'fa ' + item.icon"/><span t-esc="item.label"/>
+                    </button>
+                </t>
+            </nav>
+            <div class="wm-nav-footer">
+                <button type="button" class="wm-nav-item" t-att-class="{'active': state.screen === 'settings'}" t-on-click="() => this.go('settings')">
+                    <i class="fa fa-cog"/><span>Settings</span>
+                </button>
+                <button type="button" class="wm-nav-item" t-att-class="{'active': state.screen === 'audit'}" t-on-click="() => this.go('audit')">
+                    <i class="fa fa-history"/><span>Audit &amp; Activity</span>
+                </button>
+                <button type="button" class="wm-nav-item"><i class="fa fa-question-circle"/><span>Help Center</span></button>
+                <button type="button" class="wm-nav-item"><i class="fa fa-user"/><span>Account</span></button>
+            </div>
+        </aside>
+
+        <div class="wm-main">
+            <header class="wm-topbar">
+                <button type="button" class="wm-menu-btn" t-on-click="toggleMenu"><i class="fa fa-bars"/></button>
+                <div class="wm-crumb">
+                    <span>FMS</span><span>/</span><span>Waste Management</span><span>/</span>
+                    <strong t-esc="screenMeta.title"/>
+                </div>
+                <div class="wm-top-center">
+                    <input class="wm-top-search" placeholder="Search records..." t-model="state.search"/>
+                </div>
+                <div class="wm-site-wrap">
+                    <span class="wm-site-chip" t-esc="d.site"/>
+                    <button type="button" class="wm-switch-btn">All Sites</button>
+                    <button type="button" class="wm-icon-btn"><i class="fa fa-bell"/></button>
+                    <div class="wm-avatar">WM</div>
+                </div>
+            </header>
+
+            <div class="wm-content">
+                <div class="wm-page-head">
+                    <div>
+                        <h1 t-esc="screenMeta.title"/>
+                        <p t-esc="screenMeta.subtitle"/>
+                    </div>
+                    <div class="wm-page-actions">
+                        <t t-if="state.screen === 'dashboard'">
+                            <button type="button" class="wm-btn" t-on-click="() => this.go('schedule')">Schedule Collection</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateEntry">+ Add Waste Entry</button>
+                        </t>
+                        <t t-if="state.screen === 'entries'">
+                            <button type="button" class="wm-btn" t-on-click="() => this.exportData('Waste Entries Export')"><i class="fa fa-download"/> Export</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateEntry">+ Add Waste Entry</button>
+                        </t>
+                        <t t-if="state.screen === 'entry_create'">
+                            <button type="button" class="wm-btn-link" t-on-click="() => this.go('entries')">Cancel</button>
+                            <button type="button" class="wm-btn" t-on-click="() => this.saveEntry(true)">Save Draft</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="() => this.saveEntry(false)">Save &amp; Submit</button>
+                        </t>
+                        <t t-if="state.screen === 'entry_detail'">
+                            <button type="button" class="wm-btn" t-on-click="() => this.go('entries')">Back</button>
+                            <button type="button" class="wm-btn" t-on-click="openCreateEntry">Edit</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateSchedule">Schedule Collection</button>
+                        </t>
+                        <t t-if="state.screen === 'segregation'">
+                            <button type="button" class="wm-btn" t-on-click="openBulkSegregation"><i class="fa fa-check-square-o"/> Bulk Segregation</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="() => this.openCreateSegregation()">+ Start Segregation</button>
+                        </t>
+                        <t t-if="state.screen === 'segregation_create'">
+                            <button type="button" class="wm-btn-link" t-on-click="() => this.go('segregation')">Cancel</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="saveSegregation">Start Segregation</button>
+                        </t>
+                        <t t-if="state.screen === 'schedule'">
+                            <button type="button" class="wm-btn" t-on-click="() => this.setScheduleView('Calendar')">Calendar View</button>
+                            <button type="button" class="wm-btn" t-on-click="openBulkSchedule">Bulk Schedule</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateSchedule">+ Schedule Collection</button>
+                        </t>
+                        <t t-if="state.screen === 'schedule_create'">
+                            <button type="button" class="wm-btn-link" t-on-click="() => this.go('schedule')">Cancel</button>
+                            <button type="button" class="wm-btn" t-on-click="() => this.notify('Schedule draft saved', 'success')">Save Draft</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="saveSchedule">Confirm Schedule</button>
+                        </t>
+                        <t t-if="state.screen === 'pickup'">
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="refreshPickup">Refresh Tracking</button>
+                        </t>
+                        <t t-if="state.screen === 'vendors'">
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateVendor">+ Add Vendor</button>
+                        </t>
+                        <t t-if="state.screen === 'vendor_create'">
+                            <button type="button" class="wm-btn-link" t-on-click="() => this.go('vendors')">Cancel</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="saveVendor">Save Vendor</button>
+                        </t>
+                        <t t-if="state.screen === 'vendor_detail'">
+                            <button type="button" class="wm-btn" t-on-click="() => this.go('vendors')">Back</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="editSelectedVendor">Edit Vendor</button>
+                        </t>
+                        <t t-if="state.screen === 'recycling'">
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateRecycling">+ Add Recycling Record</button>
+                        </t>
+                        <t t-if="state.screen === 'recycling_create'">
+                            <button type="button" class="wm-btn-link" t-on-click="() => this.go('recycling')">Cancel</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="saveRecycling">Save Record</button>
+                        </t>
+                        <t t-if="state.screen === 'disposal'">
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateDisposal">+ Add Disposal Record</button>
+                        </t>
+                        <t t-if="state.screen === 'disposal_create'">
+                            <button type="button" class="wm-btn-link" t-on-click="() => this.go('disposal')">Cancel</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="saveDisposal">Save Disposal</button>
+                        </t>
+                        <t t-if="state.screen === 'compliance'">
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateCompliance">+ Add Compliance</button>
+                        </t>
+                        <t t-if="state.screen === 'compliance_create'">
+                            <button type="button" class="wm-btn-link" t-on-click="() => this.go('compliance')">Cancel</button>
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="saveCompliance">Save Compliance</button>
+                        </t>
+                        <t t-if="state.screen === 'analytics'">
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="() => this.generateReport('Waste Summary Report')">Generate Report</button>
+                        </t>
+                        <t t-if="state.screen === 'settings'">
+                            <button type="button" class="wm-btn wm-btn-primary" t-on-click="saveSettings">Save Changes</button>
+                        </t>
+                        <t t-if="state.screen === 'audit'">
+                            <button type="button" class="wm-btn" t-on-click="() => this.exportData('Audit Export')"><i class="fa fa-download"/> Export</button>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- DASHBOARD -->
+                <t t-if="state.screen === 'dashboard'">
+                    <div class="wm-kpi-row wm-kpi-6">
+                        <t t-foreach="d.dashboard.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                                <div class="hint" t-att-class="k.hintClass" t-esc="k.hint"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-layout-main-side">
+                        <div class="wm-stack">
+                            <div class="wm-layout-2">
+                                <div class="wm-card">
+                                    <h3>Waste Generation Trends (30 Days)</h3>
+                                    <div class="wm-chart-bars">
+                                        <t t-foreach="d.dashboard.trend" t-as="trow" t-key="trow.day">
+                                            <div class="col">
+                                                <div class="bars">
+                                                    <div class="b1" t-att-style="'height:' + barHeight(trow.generated)"/>
+                                                    <div class="b2" t-att-style="'height:' + barHeight(trow.collected)"/>
+                                                </div>
+                                                <div class="lbl" t-esc="trow.day"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="wm-card">
+                                    <h3>Waste by Category</h3>
+                                    <div class="wm-donut-legend">
+                                        <t t-foreach="d.dashboard.categories" t-as="c" t-key="c.name">
+                                            <div>
+                                                <span class="wm-dot" t-att-style="'background:' + c.color"/>
+                                                <t t-esc="c.name"/> — <strong t-esc="c.pct + '%'"/>
+                                            </div>
+                                        </t>
+                                    </div>
+                                    <div class="mt-3">
+                                        <h3>Collection Efficiency</h3>
+                                        <div class="wm-gauge" t-att-style="'--pct:' + d.dashboard.efficiency">
+                                            <span t-esc="d.dashboard.efficiency + '%'"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wm-card">
+                                <h3>Recent Waste Entries</h3>
+                                <div class="wm-table-wrap">
+                                    <table class="wm-table">
+                                        <thead>
+                                            <tr><th>ID</th><th>Location</th><th>Category</th><th>Weight</th><th>Status</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="d.dashboard.recent" t-as="row" t-key="row.id">
+                                                <tr>
+                                                    <td class="code-link" t-esc="row.id"/>
+                                                    <td t-esc="row.location"/>
+                                                    <td t-esc="row.category"/>
+                                                    <td t-esc="row.weight"/>
+                                                    <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wm-stack">
+                            <div class="wm-card">
+                                <div class="wm-card-head">
+                                    <h3>System Alerts</h3>
+                                    <span class="wm-badge-count" t-esc="d.dashboard.alertCount + ' New'"/>
+                                </div>
+                                <t t-foreach="d.dashboard.alerts" t-as="a" t-key="a_index">
+                                    <div class="wm-alert-item" t-att-class="a.tone">
+                                        <strong t-esc="a.title"/>
+                                        <div t-esc="a.text"/>
+                                        <div class="when" t-esc="a.when"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="wm-card">
+                                <h3>Upcoming Collections</h3>
+                                <t t-foreach="d.dashboard.upcoming" t-as="u" t-key="u_index">
+                                    <div class="wm-alert-item">
+                                        <strong t-esc="u.name"/>
+                                        <div t-esc="u.when"/>
+                                        <div class="when" t-esc="u.vendor"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="wm-card">
+                                <h3>Quick Actions</h3>
+                                <div class="wm-stack">
+                                    <button type="button" class="wm-btn wm-btn-primary" t-on-click="openCreateEntry">Add Waste Entry</button>
+                                    <button type="button" class="wm-btn" t-on-click="openCreateSchedule">Schedule Collection</button>
+                                    <button type="button" class="wm-btn" t-on-click="openCreateDisposal">Add Disposal Record</button>
+                                    <button type="button" class="wm-btn" t-on-click="openCreateVendor">Add Vendor</button>
+                                    <button type="button" class="wm-btn" t-on-click="openCreateCompliance">Add Compliance</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- WASTE ENTRIES -->
+                <t t-if="state.screen === 'entries'">
+                    <div class="wm-kpi-row wm-kpi-5">
+                        <t t-foreach="d.entries.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                                <div class="hint" t-esc="k.hint"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-steps">
+                        <t t-foreach="d.entries.steps" t-as="s" t-key="s.label">
+                            <div class="wm-step" t-att-class="{'active': s.key === 'info' || s.key === 'warn' || s.key === 'bad'}">
+                                <t t-esc="s.label"/>
+                                <strong t-esc="s.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search ID, site, location..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Date Range</button>
+                            <button type="button" class="wm-filter">Site</button>
+                            <button type="button" class="wm-filter">Building</button>
+                            <button type="button" class="wm-filter">Category</button>
+                            <button type="button" class="wm-filter">Type</button>
+                        </div>
+                        <div class="wm-chips">
+                            <t t-foreach="d.entries.tabs" t-as="tab" t-key="tab">
+                                <button type="button" t-att-class="{'active': state.entriesTab === tab}" t-on-click="() => state.entriesTab = tab" t-esc="tab"/>
+                            </t>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr>
+                                        <th></th><th>Priority</th><th>Entry ID</th><th>Date &amp; Time</th><th>Site</th>
+                                        <th>Location</th><th>Category</th><th>Type</th><th>Qty</th>
+                                        <th>Segregation</th><th>Collection</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="entryRows" t-as="row" t-key="row.code">
+                                        <tr class="is-clickable" t-on-click="() => this.openEntryDetail(row)">
+                                            <td><input type="checkbox"/></td>
+                                            <td><span t-att-class="badgeClass(row.priorityKey)" t-esc="row.priority"/></td>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td t-esc="row.datetime"/>
+                                            <td t-esc="row.site"/>
+                                            <td t-esc="row.location"/>
+                                            <td><span t-att-class="categoryDot(row.categoryKey)"/><t t-esc="row.category"/></td>
+                                            <td t-esc="row.type"/>
+                                            <td t-esc="row.qty"/>
+                                            <td><span t-att-class="badgeClass(row.segregationKey)" t-esc="row.segregation"/></td>
+                                            <td><span t-att-class="badgeClass(row.collectionKey)" t-esc="row.collection"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="wm-footer-row">
+                            <span t-esc="d.entries.pageInfo"/>
+                            <div class="wm-pages"><span class="active">1</span><span>2</span><span>3</span></div>
+                        </div>
+                    </div>
+                    <div class="wm-layout-2 mt-3">
+                        <div class="wm-card">
+                            <h3>Today's Activity</h3>
+                            <ul class="wm-timeline">
+                                <t t-foreach="d.entries.activity" t-as="a" t-key="a_index">
+                                    <li t-att-class="a.tone"><span class="time" t-esc="a.time"/><t t-esc="a.text"/></li>
+                                </t>
+                            </ul>
+                        </div>
+                        <div class="wm-card">
+                            <h3>Current Waste by Category YTD</h3>
+                            <div class="wm-bar-list">
+                                <t t-foreach="d.entries.categoryBars" t-as="b" t-key="b.name">
+                                    <div class="wm-bar-row">
+                                        <div class="meta"><span t-esc="b.name"/><strong t-esc="b.pct + '%'"/></div>
+                                        <div class="wm-bar-track"><div class="wm-bar-fill" t-att-style="'width:' + b.pct + '%;background:' + b.color"/></div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ENTRY CREATE -->
+                <t t-if="state.screen === 'entry_create'">
+                    <div class="wm-card wm-form-card">
+                        <div class="wm-form-section">
+                            <div class="wm-form-section-title"><i class="fa fa-info-circle"/> Basic Information</div>
+                            <div class="wm-fields">
+                                <label>Entry ID<input value="WM-AUTO" disabled="disabled"/></label>
+                                <label>Date <span class="req">*</span><input type="date" t-model="state.entryForm.date"/></label>
+                                <label>Time <span class="req">*</span><input type="time" t-model="state.entryForm.time"/></label>
+                                <label>Site
+                                    <select t-model="state.entryForm.site">
+                                        <option>HQ Corporate Campus</option>
+                                        <option>Site Alpha</option>
+                                        <option>Site Beta</option>
+                                    </select>
+                                </label>
+                                <label>Building
+                                    <select t-model="state.entryForm.building">
+                                        <option>Building A - Main Office</option>
+                                        <option>Tower A</option>
+                                        <option>Lab Facility B</option>
+                                    </select>
+                                </label>
+                                <label>Floor / Area
+                                    <select t-model="state.entryForm.floor">
+                                        <option>3rd Floor</option>
+                                        <option>Ground Floor</option>
+                                        <option>Loading Dock</option>
+                                    </select>
+                                </label>
+                                <label class="full">Specific Location <span class="req">*</span><input t-model="state.entryForm.location" placeholder="e.g., Cafeteria Loading Dock B"/></label>
+                                <label>Source
+                                    <select t-model="state.entryForm.source">
+                                        <option>Housekeeping</option>
+                                        <option>Kitchen Ops</option>
+                                        <option>Lab</option>
+                                        <option>Office</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="wm-layout-2">
+                            <div class="wm-stack">
+                                <div class="wm-card">
+                                    <div class="wm-form-section-title"><i class="fa fa-flask"/> Classification</div>
+                                    <div class="wm-fields">
+                                        <label>Category <span class="req">*</span>
+                                            <select t-model="state.entryForm.category">
+                                                <option>Dry Recyclable</option>
+                                                <option>Wet/Organic</option>
+                                                <option>Hazardous</option>
+                                                <option>E-Waste</option>
+                                            </select>
+                                        </label>
+                                        <label>Waste Type
+                                            <select t-model="state.entryForm.waste_type">
+                                                <option>Cardboard / Paper</option>
+                                                <option>Plastic</option>
+                                                <option>Food Waste</option>
+                                                <option>Chemical</option>
+                                            </select>
+                                        </label>
+                                        <label class="full">Description<textarea t-model="state.entryForm.description" placeholder="Brief details about the waste..."/></label>
+                                    </div>
+                                </div>
+                                <div class="wm-card">
+                                    <div class="wm-form-section-title"><i class="fa fa-balance-scale"/> Quantity &amp; Measurement</div>
+                                    <div class="wm-fields">
+                                        <label>Amount<input type="number" t-model="state.entryForm.amount" placeholder="0.00"/></label>
+                                        <label>Unit
+                                            <select t-model="state.entryForm.unit">
+                                                <option>Kilograms (kg)</option>
+                                                <option>Litres (L)</option>
+                                                <option>Tons</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="wm-stack">
+                                <div class="wm-card">
+                                    <div class="wm-form-section-title"><i class="fa fa-random"/> Segregation Required</div>
+                                    <p style="font-size:12px;color:#6b7280;margin:0">Enable if waste requires sorting before final collection.</p>
+                                </div>
+                                <div class="wm-card">
+                                    <div class="wm-form-section-title"><i class="fa fa-truck"/> Collection Planning</div>
+                                    <div class="wm-soft-box">
+                                        Collection Status: Not Scheduled
+                                        <div class="mt-2"><button type="button" class="wm-btn" t-on-click="openCreateSchedule">Schedule</button></div>
+                                    </div>
+                                    <div class="wm-fields mt-3">
+                                        <label class="full">Preferred Vendor
+                                            <select t-model="state.entryForm.vendor">
+                                                <option>EcoWaste Solutions (Primary)</option>
+                                                <option>GreenCycle Waste Services</option>
+                                                <option>BioWaste Ltd</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ENTRY DETAIL -->
+                <t t-if="state.screen === 'entry_detail' and state.selectedEntry">
+                    <div class="wm-detail-head">
+                        <span class="wm-pill wm-pill-warn">Segregation Pending</span>
+                        <span class="wm-pill" t-esc="state.selectedEntry.code"/>
+                    </div>
+                    <div class="wm-steps">
+                        <div class="wm-step active"><t>Generated</t><strong>Done</strong></div>
+                        <div class="wm-step active"><t>Segregation</t><strong>Pending</strong></div>
+                        <div class="wm-step"><t>Collection</t><strong>Upcoming</strong></div>
+                        <div class="wm-step"><t>Processing</t><strong>Upcoming</strong></div>
+                        <div class="wm-step"><t>Closed</t><strong>—</strong></div>
+                    </div>
+                    <div class="wm-layout-main-side">
+                        <div class="wm-stack">
+                            <div class="wm-card">
+                                <h3>Basic Information</h3>
+                                <div class="wm-kv"><span>Entry ID</span><strong t-esc="state.selectedEntry.code"/></div>
+                                <div class="wm-kv"><span>Date &amp; Time</span><strong t-esc="state.selectedEntry.datetime"/></div>
+                                <div class="wm-kv"><span>Site</span><strong t-esc="state.selectedEntry.site"/></div>
+                                <div class="wm-kv"><span>Location</span><strong t-esc="state.selectedEntry.location"/></div>
+                            </div>
+                            <div class="wm-card">
+                                <h3>Classification</h3>
+                                <div class="wm-kv"><span>Category</span><strong t-esc="state.selectedEntry.category"/></div>
+                                <div class="wm-kv"><span>Type</span><strong t-esc="state.selectedEntry.type"/></div>
+                                <div class="wm-kv"><span>Priority</span><strong t-esc="state.selectedEntry.priority"/></div>
+                            </div>
+                            <div class="wm-card" style="background:#eff6ff">
+                                <h3>Quantity &amp; Measurement</h3>
+                                <div style="font-size:28px;font-weight:750;color:#2563eb" t-esc="state.selectedEntry.qty"/>
+                            </div>
+                        </div>
+                        <div class="wm-stack">
+                            <div class="wm-card">
+                                <h3>Entry Summary</h3>
+                                <div class="wm-kv"><span>Segregation</span><span t-att-class="badgeClass(state.selectedEntry.segregationKey)" t-esc="state.selectedEntry.segregation"/></div>
+                                <div class="wm-kv"><span>Collection</span><span t-att-class="badgeClass(state.selectedEntry.collectionKey)" t-esc="state.selectedEntry.collection"/></div>
+                                <button type="button" class="wm-btn wm-btn-primary mt-2" style="width:100%;justify-content:center" t-on-click="() => this.openCreateSegregation(state.selectedEntry)">Mark Segregated</button>
+                            </div>
+                            <div class="wm-card">
+                                <h3>Related Records</h3>
+                                <div class="wm-alert-item">Collection · COL-00248 · SCHEDULED</div>
+                                <div class="wm-alert-item">Recycling · REC-00124 · PENDING</div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- SEGREGATION -->
+                <t t-if="state.screen === 'segregation'">
+                    <div class="wm-layout-main-side">
+                        <div class="wm-stack">
+                            <div class="wm-kpi-row wm-kpi-4">
+                                <t t-foreach="segregationKpisPrimary" t-as="k" t-key="k.label">
+                                    <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                        <div class="label" t-esc="k.label"/>
+                                        <div class="value" t-esc="k.value"/>
+                                        <t t-if="k.badge"><div class="hint" t-att-class="k.tone" t-esc="k.badge"/></t>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="wm-kpi-row" style="grid-template-columns:1fr 1fr">
+                                <t t-foreach="segregationKpisSecondary" t-as="k" t-key="k.label">
+                                    <div class="wm-kpi">
+                                        <div class="label" t-esc="k.label"/>
+                                        <div class="value" t-esc="k.value"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                        <div class="wm-card">
+                            <h3>Daily Pipeline Flow</h3>
+                            <t t-foreach="d.segregation.pipeline" t-as="p" t-key="p.label">
+                                <div class="wm-alert-item" t-att-class="{'warn': p.active}">
+                                    <strong t-esc="p.label"/>
+                                    <div t-esc="p.value"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="wm-card mt-3">
+                        <div class="wm-chips">
+                            <t t-foreach="d.segregation.tabs" t-as="tab" t-key="tab">
+                                <button type="button" t-att-class="{'active': state.segregationTab === tab}" t-on-click="() => state.segregationTab = tab" t-esc="tab"/>
+                            </t>
+                        </div>
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search Entry ID, Location, or Assigned To..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Filters <span class="wm-badge-count">3</span></button>
+                            <button type="button" class="wm-filter">Site: All</button>
+                            <button type="button" class="wm-filter">Category: All</button>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr>
+                                        <th></th><th>Priority</th><th>Entry ID</th><th>Date &amp; Time</th>
+                                        <th>Site &amp; Location</th><th>Waste Info</th><th>Quantity</th><th>Status</th><th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="segregationRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td><input type="checkbox"/></td>
+                                            <td><span t-att-class="badgeClass(row.priorityKey)" t-esc="row.priority"/></td>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td t-esc="row.datetime"/>
+                                            <td><span class="name" t-esc="row.site"/><span class="sub" t-esc="row.location"/></td>
+                                            <td><span class="name" t-esc="row.type"/><span class="sub" t-esc="row.category"/></td>
+                                            <td t-esc="row.qty"/>
+                                            <td>
+                                                <span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/>
+                                                <t t-if="row.assignee"><span class="sub" t-esc="row.assignee"/></t>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="wm-btn wm-btn-primary" t-on-click.stop="() => this.openCreateSegregation(row)">Start</button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="wm-footer-row">
+                            <span t-esc="d.segregation.pageInfo"/>
+                            <div class="wm-pages"><span class="active">1</span><span>2</span><span>3</span></div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- SEGREGATION CREATE -->
+                <t t-if="state.screen === 'segregation_create'">
+                    <div class="wm-card wm-form-card">
+                        <div class="wm-form-section">
+                            <div class="wm-form-section-title"><i class="fa fa-random"/> Segregation Details</div>
+                            <div class="wm-fields">
+                                <label>Waste Entry ID <span class="req">*</span><input t-model="state.segregationForm.entry_id"/></label>
+                                <label>Category<input t-model="state.segregationForm.category"/></label>
+                                <label>Original Quantity <span class="req">*</span><input t-model="state.segregationForm.original_qty" placeholder="e.g. 45"/></label>
+                                <label>Segregation Location<input t-model="state.segregationForm.location"/></label>
+                                <label>Dry / Recyclable Qty<input type="number" t-model="state.segregationForm.dry_qty"/></label>
+                                <label>Wet / Organic Qty<input type="number" t-model="state.segregationForm.wet_qty"/></label>
+                                <label>Hazardous Qty<input type="number" t-model="state.segregationForm.hazardous_qty"/></label>
+                                <label>Residual Qty<input type="number" t-model="state.segregationForm.residual_qty"/></label>
+                                <label>Assigned To
+                                    <select t-model="state.segregationForm.assignee">
+                                        <option>Housekeeping</option>
+                                        <option>J. Smith</option>
+                                        <option>Ops Team</option>
+                                        <option>Lab Staff</option>
+                                    </select>
+                                </label>
+                                <label class="full">Notes<textarea t-model="state.segregationForm.notes" placeholder="Classification notes..."/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- COLLECTION SCHEDULE -->
+                <t t-if="state.screen === 'schedule'">
+                    <div class="wm-kpi-row wm-kpi-5">
+                        <t t-foreach="d.schedule.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-steps">
+                        <t t-foreach="d.schedule.pipeline" t-as="p" t-key="p.label">
+                            <div class="wm-step" t-att-class="{'active': p.active}">
+                                <t t-esc="p.label"/>
+                                <strong t-esc="p.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search ID, Site, Vendor..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Filter</button>
+                            <button type="button" class="wm-filter" t-att-class="{'active': state.scheduleView === 'List'}" t-on-click="() => this.setScheduleView('List')">List</button>
+                            <button type="button" class="wm-filter" t-att-class="{'active': state.scheduleView === 'Calendar'}" t-on-click="() => this.setScheduleView('Calendar')">Calendar</button>
+                            <button type="button" class="wm-filter" t-att-class="{'active': state.scheduleView === 'Timeline'}" t-on-click="() => this.setScheduleView('Timeline')">Timeline</button>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr><th>Priority</th><th>Collection ID</th><th>Waste Entry</th><th>Date &amp; Time</th><th>Site &amp; Location</th><th>Type &amp; Qty</th><th>Vendor</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="scheduleRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td><span t-att-class="badgeClass(row.priorityKey)" t-esc="row.priority"/></td>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td t-esc="row.entry"/>
+                                            <td t-esc="row.datetime"/>
+                                            <td t-esc="row.site"/>
+                                            <td><span class="name" t-esc="row.type"/><span class="sub" t-esc="row.qty"/></td>
+                                            <td t-esc="row.vendor"/>
+                                            <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="wm-footer-row"><span t-esc="d.schedule.pageInfo"/><div class="wm-pages"><span class="active">1</span><span>2</span></div></div>
+                    </div>
+                </t>
+
+                <!-- SCHEDULE CREATE -->
+                <t t-if="state.screen === 'schedule_create'">
+                    <div class="wm-steps">
+                        <div class="wm-step active"><t>1. Select Waste</t><strong>Active</strong></div>
+                        <div class="wm-step"><t>2. Collection Details</t><strong>Next</strong></div>
+                        <div class="wm-step"><t>3. Assign Resources</t><strong>—</strong></div>
+                        <div class="wm-step"><t>4. Review &amp; Schedule</t><strong>—</strong></div>
+                    </div>
+                    <div class="wm-layout-main-side">
+                        <div class="wm-card">
+                            <h3>Available Segregated Waste</h3>
+                            <div class="wm-toolbar">
+                                <input class="wm-search" placeholder="Search ID or Type..."/>
+                                <button type="button" class="wm-filter">Filter</button>
+                            </div>
+                            <div class="wm-table-wrap">
+                                <table class="wm-table">
+                                    <thead>
+                                        <tr><th></th><th>Entry ID</th><th>Waste Type</th><th>Weight/Vol</th><th>Location</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="state.readyEntries" t-as="we" t-key="we.code">
+                                            <tr>
+                                                <td><input type="checkbox" t-att-checked="isScheduleWasteSelected(we.code)" t-on-change="() => this.toggleScheduleWaste(we.code)"/></td>
+                                                <td class="code-link" t-esc="we.code"/>
+                                                <td><span class="wm-dot info"/> <t t-esc="we.label || we.code"/></td>
+                                                <td t-esc="(we.qty || 0) + ' kg'"/>
+                                                <td>—</td>
+                                            </tr>
+                                        </t>
+                                        <tr t-if="!state.readyEntries.length">
+                                            <td colspan="5" class="text-muted">No ready waste entries. Confirm and segregate entries first.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="wm-form-section mt-3">
+                                <div class="wm-form-section-title"><i class="fa fa-calendar"/> Collection Details</div>
+                                <div class="wm-fields">
+                                    <label>Date <span class="req">*</span><input type="date" t-model="state.scheduleForm.date"/></label>
+                                    <label>Priority
+                                        <select t-model="state.scheduleForm.priority">
+                                            <option>High</option>
+                                            <option>Med</option>
+                                            <option>Low</option>
+                                        </select>
+                                    </label>
+                                    <label>From<input type="time" t-model="state.scheduleForm.time_from"/></label>
+                                    <label>To<input type="time" t-model="state.scheduleForm.time_to"/></label>
+                                    <label class="full">Site / Location<input t-model="state.scheduleForm.site"/></label>
+                                    <label class="full">Vendor <span class="req">*</span>
+                                        <select t-model="state.scheduleForm.vendor">
+                                            <option value="">Select vendor</option>
+                                            <t t-foreach="d.vendors.rows" t-as="v" t-key="v.id or v.code">
+                                                <option t-att-value="v.name" t-esc="v.name"/>
+                                            </t>
+                                        </select>
+                                    </label>
+                                    <label class="full">Notes<textarea t-model="state.scheduleForm.notes"/></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wm-card">
+                            <div class="wm-card-head"><h3>Collection Summary</h3><span class="wm-pill">Draft</span></div>
+                            <div class="wm-kv"><span>Selected entries</span><strong t-esc="state.selectedScheduleWaste.length"/></div>
+                            <div class="wm-kv"><span>Total Weight</span><strong style="color:#2563eb" t-esc="scheduleSelectedTotal + ' kg'"/></div>
+                            <div class="wm-soft-box">
+                                <div>✓ Segregation Completed</div>
+                                <div>✓ Quantity Available</div>
+                                <div>○ Resource Capacity Verified</div>
+                            </div>
+                            <button type="button" class="wm-btn wm-btn-primary mt-3" style="width:100%;justify-content:center" t-on-click="saveSchedule">Continue / Confirm Schedule</button>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- PICKUP -->
+                <t t-if="state.screen === 'pickup'">
+                    <div class="wm-kpi-row wm-kpi-5">
+                        <t t-foreach="d.pickup.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search pickup, vendor, driver..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Status</button>
+                            <button type="button" class="wm-filter">Vendor</button>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr><th>Pickup ID</th><th>Collection</th><th>Vendor</th><th>Driver</th><th>Site</th><th>Expected</th><th>Actual</th><th>ETA</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="pickupRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td t-esc="row.collection"/>
+                                            <td t-esc="row.vendor"/>
+                                            <td t-esc="row.driver"/>
+                                            <td t-esc="row.site"/>
+                                            <td t-esc="row.expected"/>
+                                            <td t-esc="row.actual"/>
+                                            <td t-esc="row.eta"/>
+                                            <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- VENDORS -->
+                <t t-if="state.screen === 'vendors'">
+                    <div class="wm-kpi-row wm-kpi-4">
+                        <t t-foreach="d.vendors.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search vendor..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Status</button>
+                            <button type="button" class="wm-filter">Service</button>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr><th>Code</th><th>Vendor</th><th>Contact</th><th>Services</th><th>Sites</th><th>Rating</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="vendorRows" t-as="row" t-key="row.code">
+                                        <tr class="is-clickable" t-on-click="() => this.openVendorDetail(row)">
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td class="name" t-esc="row.name"/>
+                                            <td><span t-esc="row.contact"/><span class="sub" t-esc="row.phone"/></td>
+                                            <td t-esc="row.services"/>
+                                            <td t-esc="row.sites"/>
+                                            <td t-esc="row.rating"/>
+                                            <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- VENDOR DETAIL -->
+                <t t-if="state.screen === 'vendor_detail'">
+                    <div class="wm-card">
+                        <div class="wm-detail-head">
+                            <span class="wm-pill" t-esc="d.vendorDetail.code"/>
+                            <span class="wm-pill wm-pill-ok" t-esc="d.vendorDetail.status"/>
+                            <span class="wm-pill wm-pill-info" t-esc="d.vendorDetail.eligible"/>
+                            <span>★ <t t-esc="d.vendorDetail.rating"/> · <t t-esc="d.vendorDetail.reviews"/></span>
+                        </div>
+                        <div class="wm-kv"><span>Contact</span><strong t-esc="d.vendorDetail.contact"/></div>
+                        <div class="wm-kv"><span>Phone</span><strong t-esc="d.vendorDetail.phone"/></div>
+                        <div class="wm-kv"><span>Email</span><strong t-esc="d.vendorDetail.email"/></div>
+                        <div class="wm-chips mt-2">
+                            <t t-foreach="d.vendorDetail.sites" t-as="s" t-key="s"><button type="button" class="active" t-esc="s"/></t>
+                        </div>
+                        <div class="wm-chips">
+                            <t t-foreach="d.vendorDetail.categories" t-as="c" t-key="c"><button type="button" class="active" t-esc="c"/></t>
+                        </div>
+                    </div>
+                    <div class="wm-tabs mt-3">
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'overview'}" t-on-click="() => state.vendorTab = 'overview'">Overview</button>
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'contract'}" t-on-click="() => state.vendorTab = 'contract'">Contract</button>
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'compliance'}" t-on-click="() => state.vendorTab = 'compliance'">Compliance &amp; Documents</button>
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'performance'}" t-on-click="() => state.vendorTab = 'performance'">Performance</button>
+                    </div>
+                    <div class="wm-layout-main-side">
+                        <div class="wm-stack">
+                            <div class="wm-card">
+                                <h3>Registration Details</h3>
+                                <div class="wm-kv"><span>Registration Number</span><strong t-esc="d.vendorDetail.registration"/></div>
+                                <div class="wm-kv"><span>Tax ID / GSTIN</span><strong t-esc="d.vendorDetail.gstin"/></div>
+                                <div class="wm-kv"><span>Vendor Since</span><strong t-esc="d.vendorDetail.since"/></div>
+                                <div class="wm-soft-box mt-2">
+                                    <strong>Corporate Headquarters</strong><div>Mumbai, Maharashtra</div>
+                                </div>
+                            </div>
+                            <div class="wm-card">
+                                <h3>Current Active Contract</h3>
+                                <div class="wm-kv"><span>Contract</span><strong t-esc="d.vendorDetail.contract.code"/></div>
+                                <div class="wm-kv"><span>Period</span><strong><t t-esc="d.vendorDetail.contract.start"/> – <t t-esc="d.vendorDetail.contract.end"/></strong></div>
+                                <div class="wm-progress"><div class="track"><div class="fill"/></div></div>
+                                <div style="font-size:12px;color:#6b7280" t-esc="d.vendorDetail.contract.remaining"/>
+                            </div>
+                        </div>
+                        <div class="wm-card">
+                            <h3>Eligibility Status</h3>
+                            <ul class="wm-check-list">
+                                <t t-foreach="d.vendorDetail.checks" t-as="c" t-key="c"><li t-esc="c"/></t>
+                            </ul>
+                            <div class="mt-2" style="font-size:12px;color:#6b7280">Last verified: <t t-esc="d.vendorDetail.verified"/></div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- VENDOR CREATE -->
+                <t t-if="state.screen === 'vendor_create'">
+                    <div class="wm-card wm-form-card">
+                        <div class="wm-form-section">
+                            <div class="wm-form-section-title"><i class="fa fa-briefcase"/> Vendor Information</div>
+                            <div class="wm-fields">
+                                <label>Vendor Name <span class="req">*</span><input t-model="state.vendorForm.name"/></label>
+                                <label>Contact Person <span class="req">*</span><input t-model="state.vendorForm.contact"/></label>
+                                <label>Phone<input t-model="state.vendorForm.phone"/></label>
+                                <label>Email<input t-model="state.vendorForm.email"/></label>
+                                <label>Services<input t-model="state.vendorForm.services" placeholder="Plastic, Paper, Organic"/></label>
+                                <label>Sites<input t-model="state.vendorForm.sites"/></label>
+                                <label class="full">Notes<textarea t-model="state.vendorForm.notes"/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- RECYCLING -->
+                <t t-if="state.screen === 'recycling'">
+                    <div class="wm-kpi-row wm-kpi-4">
+                        <t t-foreach="d.recycling.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search recycling..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Status</button>
+                            <button type="button" class="wm-filter">Type</button>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr><th>Record</th><th>Source</th><th>Type</th><th>Received</th><th>Processed</th><th>Rejected</th><th>Vendor</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="recyclingRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td t-esc="row.source"/>
+                                            <td t-esc="row.type"/>
+                                            <td t-esc="row.received"/>
+                                            <td t-esc="row.processed"/>
+                                            <td t-esc="row.rejected"/>
+                                            <td t-esc="row.vendor"/>
+                                            <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- RECYCLING CREATE -->
+                <t t-if="state.screen === 'recycling_create'">
+                    <div class="wm-card wm-form-card">
+                        <div class="wm-form-section">
+                            <div class="wm-form-section-title"><i class="fa fa-recycle"/> Recycling Record</div>
+                            <div class="wm-fields">
+                                <label>Source Entry/Collection <span class="req">*</span><input t-model="state.recyclingForm.source"/></label>
+                                <label>Type
+                                    <select t-model="state.recyclingForm.type">
+                                        <option>Paper</option>
+                                        <option>Plastic</option>
+                                        <option>Cardboard</option>
+                                        <option>Metal</option>
+                                    </select>
+                                </label>
+                                <label>Received Qty (kg) <span class="req">*</span><input type="number" t-model="state.recyclingForm.received"/></label>
+                                <label>Method
+                                    <select t-model="state.recyclingForm.method">
+                                        <option>Baling</option>
+                                        <option>Sorting</option>
+                                        <option>Shredding</option>
+                                    </select>
+                                </label>
+                                <label>Vendor
+                                    <select t-model="state.recyclingForm.vendor">
+                                        <option>GreenCycle</option>
+                                        <option>TechRecycle</option>
+                                    </select>
+                                </label>
+                                <label class="full">Notes<textarea t-model="state.recyclingForm.notes"/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- DISPOSAL -->
+                <t t-if="state.screen === 'disposal'">
+                    <div class="wm-kpi-row wm-kpi-4">
+                        <t t-foreach="d.disposal.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search disposal..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Status</button>
+                            <button type="button" class="wm-filter">Method</button>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr><th>Disposal ID</th><th>Source</th><th>Type</th><th>Qty</th><th>Method</th><th>Vendor</th><th>Cost</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="disposalRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td t-esc="row.source"/>
+                                            <td t-esc="row.type"/>
+                                            <td t-esc="row.qty"/>
+                                            <td t-esc="row.method"/>
+                                            <td t-esc="row.vendor"/>
+                                            <td t-esc="row.cost"/>
+                                            <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- DISPOSAL CREATE -->
+                <t t-if="state.screen === 'disposal_create'">
+                    <div class="wm-card wm-form-card">
+                        <div class="wm-form-section">
+                            <div class="wm-form-section-title"><i class="fa fa-trash"/> Disposal Record</div>
+                            <div class="wm-fields">
+                                <label>Source <span class="req">*</span><input t-model="state.disposalForm.source"/></label>
+                                <label>Waste Type<input t-model="state.disposalForm.type"/></label>
+                                <label>Quantity (kg) <span class="req">*</span><input type="number" t-model="state.disposalForm.qty"/></label>
+                                <label>Method
+                                    <select t-model="state.disposalForm.method">
+                                        <option>Incineration</option>
+                                        <option>Landfill</option>
+                                        <option>Authorized Disposal</option>
+                                    </select>
+                                </label>
+                                <label>Vendor
+                                    <select t-model="state.disposalForm.vendor">
+                                        <option>EcoSafe</option>
+                                        <option>BioWaste Ltd</option>
+                                    </select>
+                                </label>
+                                <label>Estimated Cost<input type="number" t-model="state.disposalForm.cost"/></label>
+                                <label class="full">Notes<textarea t-model="state.disposalForm.notes"/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- COMPLIANCE -->
+                <t t-if="state.screen === 'compliance'">
+                    <div class="wm-kpi-row wm-kpi-4">
+                        <t t-foreach="d.compliance.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search compliance..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Status</button>
+                            <button type="button" class="wm-filter">Authority</button>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr><th>Code</th><th>Compliance</th><th>Authority</th><th>Site</th><th>Expiry</th><th>Owner</th><th>Priority</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="complianceRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td class="name" t-esc="row.name"/>
+                                            <td t-esc="row.authority"/>
+                                            <td t-esc="row.site"/>
+                                            <td t-esc="row.expiry"/>
+                                            <td t-esc="row.owner"/>
+                                            <td t-esc="row.priority"/>
+                                            <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- COMPLIANCE CREATE -->
+                <t t-if="state.screen === 'compliance_create'">
+                    <div class="wm-card wm-form-card">
+                        <div class="wm-form-section">
+                            <div class="wm-form-section-title"><i class="fa fa-shield"/> Compliance Requirement</div>
+                            <div class="wm-fields">
+                                <label>Compliance Name <span class="req">*</span><input t-model="state.complianceForm.name"/></label>
+                                <label>Authority
+                                    <select t-model="state.complianceForm.authority">
+                                        <option>SPCB</option>
+                                        <option>CPCB</option>
+                                        <option>Local Body</option>
+                                    </select>
+                                </label>
+                                <label>Site<input t-model="state.complianceForm.site"/></label>
+                                <label>Expiry Date <span class="req">*</span><input type="date" t-model="state.complianceForm.expiry"/></label>
+                                <label>Owner<input t-model="state.complianceForm.owner"/></label>
+                                <label>Priority
+                                    <select t-model="state.complianceForm.priority">
+                                        <option>High</option>
+                                        <option>Med</option>
+                                        <option>Low</option>
+                                    </select>
+                                </label>
+                                <label class="full">Notes<textarea t-model="state.complianceForm.notes"/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ANALYTICS -->
+                <t t-if="state.screen === 'analytics'">
+                    <div class="wm-kpi-row wm-kpi-4">
+                        <t t-foreach="d.analytics.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <h3>Report Library</h3>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr><th>Report</th><th>Category</th><th>Formats</th><th></th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="d.analytics.reports" t-as="r" t-key="r.name">
+                                        <tr>
+                                            <td class="name" t-esc="r.name"/>
+                                            <td t-esc="r.category"/>
+                                            <td t-esc="r.format"/>
+                                            <td><button type="button" class="wm-btn wm-btn-primary" t-on-click="() => this.generateReport(r.name)">Generate</button></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- SETTINGS -->
+                <t t-if="state.screen === 'settings'">
+                    <div class="wm-settings-grid">
+                        <t t-foreach="d.settings.sections" t-as="s" t-key="s.title">
+                            <div class="wm-card">
+                                <h3 t-esc="s.title"/>
+                                <p style="margin:8px 0 0;color:#6b7280;font-size:13px" t-esc="s.text"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- AUDIT -->
+                <t t-if="state.screen === 'audit'">
+                    <div class="wm-kpi-row wm-kpi-4">
+                        <t t-foreach="d.audit.kpis" t-as="k" t-key="k.label">
+                            <div class="wm-kpi" t-att-class="'tone-' + (k.tone || '')">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="wm-card">
+                        <div class="wm-toolbar">
+                            <input class="wm-search" placeholder="Search activity..." t-model="state.search"/>
+                            <button type="button" class="wm-filter">Module</button>
+                            <button type="button" class="wm-filter">User</button>
+                            <button type="button" class="wm-filter">Date</button>
+                        </div>
+                        <div class="wm-table-wrap">
+                            <table class="wm-table">
+                                <thead>
+                                    <tr><th>When</th><th>User</th><th>Module</th><th>Activity</th><th>Record</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="auditRows" t-as="row" t-key="row_index">
+                                        <tr>
+                                            <td t-esc="row.when"/>
+                                            <td t-esc="row.user"/>
+                                            <td t-esc="row.module"/>
+                                            <td t-esc="row.activity"/>
+                                            <td class="code-link" t-esc="row.record"/>
+                                            <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </div>
+</t>
+</templates>
