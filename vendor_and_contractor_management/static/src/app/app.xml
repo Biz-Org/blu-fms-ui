@@ -1,0 +1,1005 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<t t-name="vendor_and_contractor_management.App">
+    <div class="o_vc_app">
+        <aside class="vc-sidebar" t-att-class="{'is-open': state.menuOpen}">
+            <div class="vc-brand">
+                <div class="vc-brand-mark"><i class="fa fa-building"/></div>
+                <div>
+                    <div class="vc-brand-title">Vendor &amp; Contractor Management</div>
+                    <div class="vc-brand-sub">Facility Management</div>
+                </div>
+            </div>
+            <nav class="vc-nav">
+                <t t-foreach="nav" t-as="item" t-key="item.id">
+                    <button type="button" class="vc-nav-item" t-att-class="{'active': isNavActive(item.id)}" t-on-click="() => this.go(item.id)">
+                        <i t-att-class="'fa ' + item.icon"/><span t-esc="item.label"/>
+                    </button>
+                </t>
+            </nav>
+            <div class="vc-nav-footer">
+                <button type="button" class="vc-nav-item" t-att-class="{'active': state.screen === 'notifications'}" t-on-click="() => this.go('notifications')">
+                    <i class="fa fa-bell"/><span>Notifications</span>
+                </button>
+                <button type="button" class="vc-nav-item" t-att-class="{'active': state.screen === 'settings'}" t-on-click="() => this.go('settings')">
+                    <i class="fa fa-cog"/><span>Settings</span>
+                </button>
+            </div>
+        </aside>
+
+        <div class="vc-main">
+            <header class="vc-topbar">
+                <button type="button" class="vc-menu-btn" t-on-click="toggleMenu"><i class="fa fa-bars"/></button>
+                <div class="vc-crumb">
+                    <span>Vendor &amp; Contractor Management</span>
+                    <span>/</span>
+                    <strong t-esc="screenMeta.title"/>
+                </div>
+                <div class="vc-top-center">
+                    <input class="vc-top-search" placeholder="Quick search..."/>
+                </div>
+                <div class="vc-site-wrap">
+                    <span class="vc-site-chip" t-esc="d.site"/>
+                    <span class="vc-site-chip" t-esc="d.facility"/>
+                    <button type="button" class="vc-switch-btn">Switch Site</button>
+                    <button type="button" class="vc-icon-btn" t-on-click="() => this.go('notifications')"><i class="fa fa-bell"/></button>
+                    <div class="vc-avatar">PS</div>
+                </div>
+            </header>
+
+            <div class="vc-content">
+                <div class="vc-page-head">
+                    <div>
+                        <h1 t-esc="screenMeta.title"/>
+                        <p t-esc="screenMeta.subtitle"/>
+                    </div>
+                    <div class="vc-page-actions">
+                        <t t-if="['vendors','contractors','contracts','workforce','attendance','passes','ptw','documents','reports'].includes(state.screen)">
+                            <button type="button" class="vc-btn"><i class="fa fa-download"/> Export</button>
+                        </t>
+                        <t t-if="state.screen === 'vendors'">
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="openCreateVendor">+ New Vendor</button>
+                        </t>
+                        <t t-if="state.screen === 'contractors'">
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="openCreateContractor">+ New Contractor</button>
+                        </t>
+                        <t t-if="state.screen === 'contracts'">
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="openCreateContract">+ Create Contract</button>
+                        </t>
+                        <t t-if="state.screen === 'workforce'">
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="openCreateWorker">+ Add Worker</button>
+                        </t>
+                        <t t-if="state.screen === 'passes'">
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="openCreatePass">+ Create Daily Pass</button>
+                        </t>
+                        <t t-if="state.screen === 'ptw'">
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="openCreatePtw">+ Create Permit</button>
+                        </t>
+                        <t t-if="state.screen === 'contractor_create'">
+                            <button type="button" class="vc-btn-link" t-on-click="() => this.go('contractors')">Cancel</button>
+                            <button type="button" class="vc-btn" t-on-click="() => this.saveContractor(true)">Save Draft</button>
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="() => this.saveContractor(false)">Create Contractor</button>
+                        </t>
+                        <t t-if="state.screen === 'contract_create'">
+                            <button type="button" class="vc-btn-link" t-on-click="() => this.go('contracts')">Cancel</button>
+                            <button type="button" class="vc-btn" t-on-click="() => this.saveContract(true)">Save Draft</button>
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="() => this.saveContract(false)">Create Contract</button>
+                        </t>
+                        <t t-if="state.screen === 'worker_create'">
+                            <button type="button" class="vc-btn-link" t-on-click="() => this.go('workforce')">Cancel</button>
+                            <button type="button" class="vc-btn" t-on-click="() => this.saveWorker(true)">Save Draft</button>
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="() => this.saveWorker(false)">Add Worker</button>
+                        </t>
+                        <t t-if="state.screen === 'pass_create'">
+                            <button type="button" class="vc-btn-link" t-on-click="() => this.go('passes')">Cancel</button>
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="savePass">Create Daily Pass</button>
+                        </t>
+                        <t t-if="state.screen === 'ptw_create'">
+                            <button type="button" class="vc-btn-link" t-on-click="() => this.go('ptw')">Cancel</button>
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="savePtw">Create Permit</button>
+                        </t>
+                        <t t-if="state.screen === 'vendor_create'">
+                            <button type="button" class="vc-btn-link" t-on-click="() => this.go('vendors')">Cancel</button>
+                            <button type="button" class="vc-btn" t-on-click="() => this.saveVendor(true)">Save Draft</button>
+                            <button type="button" class="vc-btn vc-btn-primary" t-on-click="() => this.saveVendor(false)"><i class="fa fa-check"/> Create Vendor</button>
+                        </t>
+                        <t t-if="state.screen === 'vendor_detail'">
+                            <button type="button" class="vc-btn" t-on-click="() => this.go('vendors')">Back to Vendors</button>
+                            <button type="button" class="vc-btn">More Actions</button>
+                            <button type="button" class="vc-btn vc-btn-primary">Edit Vendor</button>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- ========== DASHBOARD ========== -->
+                <t t-if="state.screen === 'dashboard'">
+                    <div class="vc-kpi-row vc-kpi-6">
+                        <t t-foreach="d.dashboard.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="{'accent': k.accent}">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-esc="k.value"/>
+                                <div class="hint" t-att-class="k.hintClass">● <t t-esc="k.hint"/></div>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-stack">
+                            <div class="vc-card">
+                                <h3>Status Overview</h3>
+                                <div class="vc-seg">
+                                    <div class="vc-seg-label"><span>Vendor Status</span><strong t-esc="d.dashboard.vendorStatus.total + ' Total'"/></div>
+                                    <div class="vc-seg-track">
+                                        <span class="a" t-att-style="'width:' + statusPct(d.dashboard.vendorStatus.active, d.dashboard.vendorStatus.total) + '%'"/>
+                                        <span class="p" t-att-style="'width:' + statusPct(d.dashboard.vendorStatus.pending, d.dashboard.vendorStatus.total) + '%'"/>
+                                        <span class="s" t-att-style="'width:' + statusPct(d.dashboard.vendorStatus.suspended, d.dashboard.vendorStatus.total) + '%'"/>
+                                    </div>
+                                    <div class="vc-seg-legend">
+                                        <span><i class="vc-dot a"/> Active <t t-esc="d.dashboard.vendorStatus.active"/></span>
+                                        <span><i class="vc-dot p"/> Pending <t t-esc="d.dashboard.vendorStatus.pending"/></span>
+                                        <span><i class="vc-dot s"/> Suspended <t t-esc="d.dashboard.vendorStatus.suspended"/></span>
+                                    </div>
+                                </div>
+                                <div class="vc-seg">
+                                    <div class="vc-seg-label"><span>Contractor Status</span><strong t-esc="d.dashboard.contractorStatus.total + ' Total'"/></div>
+                                    <div class="vc-seg-track">
+                                        <span class="a" t-att-style="'width:' + statusPct(d.dashboard.contractorStatus.active, d.dashboard.contractorStatus.total) + '%'"/>
+                                        <span class="p" t-att-style="'width:' + statusPct(d.dashboard.contractorStatus.pending, d.dashboard.contractorStatus.total) + '%'"/>
+                                        <span class="s" t-att-style="'width:' + statusPct(d.dashboard.contractorStatus.suspended, d.dashboard.contractorStatus.total) + '%'"/>
+                                    </div>
+                                    <div class="vc-seg-legend">
+                                        <span><i class="vc-dot a"/> Active <t t-esc="d.dashboard.contractorStatus.active"/></span>
+                                        <span><i class="vc-dot p"/> Pending <t t-esc="d.dashboard.contractorStatus.pending"/></span>
+                                        <span><i class="vc-dot s"/> Suspended <t t-esc="d.dashboard.contractorStatus.suspended"/></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vc-card">
+                                <h3>Pending Actions</h3>
+                                <div class="vc-table-wrap">
+                                    <table class="vc-table">
+                                        <thead>
+                                            <tr><th>Type</th><th>Name</th><th>Category</th><th>Site</th><th>Action Required</th><th>Due Date</th><th>Status</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="d.dashboard.pendingActions" t-as="row" t-key="row_index">
+                                                <tr>
+                                                    <td t-esc="row.type"/>
+                                                    <td class="name" t-esc="row.name"/>
+                                                    <td t-esc="row.category"/>
+                                                    <td t-esc="row.site"/>
+                                                    <td t-esc="row.action"/>
+                                                    <td t-esc="row.due"/>
+                                                    <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="vc-stack">
+                            <div class="vc-card">
+                                <h3>Quick Actions</h3>
+                                <div class="vc-quick-grid">
+                                    <button type="button" class="vc-btn vc-btn-primary" t-on-click="openCreateVendor">New Vendor</button>
+                                    <button type="button" class="vc-btn vc-btn-primary" t-on-click="openCreateContractor">New Contractor</button>
+                                    <button type="button" class="vc-btn" t-on-click="openCreateContract">Create Contract</button>
+                                    <button type="button" class="vc-btn" t-on-click="() => this.go('documents')">Compliance</button>
+                                    <button type="button" class="vc-btn" t-on-click="openCreatePass">Daily Pass</button>
+                                    <button type="button" class="vc-btn" t-on-click="openCreatePtw">Create PTW</button>
+                                </div>
+                            </div>
+                            <div class="vc-card">
+                                <div class="vc-card-head">
+                                    <h3>Attention Required</h3>
+                                    <span class="vc-badge-count" t-esc="d.dashboard.alertCount"/>
+                                </div>
+                                <t t-foreach="d.dashboard.alerts" t-as="a" t-key="a_index">
+                                    <div class="vc-alert-item" t-att-class="a.tone">
+                                        <strong t-esc="a.title"/><div t-esc="a.text"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== VENDORS ========== -->
+                <t t-if="state.screen === 'vendors'">
+                    <div class="vc-kpi-row vc-kpi-4">
+                        <t t-foreach="d.vendors.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-card">
+                        <div class="vc-toolbar">
+                            <input class="vc-search" placeholder="Search vendors... (Name, ID, Contact...)" t-model="state.search"/>
+                            <button type="button" class="vc-filter">Status</button>
+                            <button type="button" class="vc-filter">Category</button>
+                            <button type="button" class="vc-filter">Site</button>
+                            <button type="button" class="vc-filter">Compliance</button>
+                            <button type="button" class="vc-filter">Contract Status</button>
+                            <button type="button" class="vc-filter"><i class="fa fa-filter"/> More Filters</button>
+                        </div>
+                        <div class="vc-table-wrap">
+                            <table class="vc-table">
+                                <thead>
+                                    <tr>
+                                        <th><input class="vc-check" type="checkbox"/></th>
+                                        <th>Vendor ID</th><th>Vendor Name</th><th>Category</th><th>Contact Person</th>
+                                        <th>Site</th><th>Contract/AMC</th><th>Compliance</th><th>Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="vendorRows" t-as="row" t-key="row.code">
+                                        <tr class="is-clickable" t-on-click="() => this.openVendorDetail(row)">
+                                            <td t-on-click.stop=""><input class="vc-check" type="checkbox"/></td>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td class="name" t-esc="row.name"/>
+                                            <td t-esc="row.category"/>
+                                            <td t-esc="row.contact"/>
+                                            <td t-esc="row.site"/>
+                                            <td t-att-class="row.contractTone === 'bad' ? 'tone-bad' : ''" t-esc="row.contract"/>
+                                            <td><span t-att-class="badgeClass(row.complianceKey)" t-esc="row.compliance"/></td>
+                                            <td><t t-esc="row.rating"/> ★</td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="vc-footer-row">
+                            <span t-esc="d.vendors.pageInfo"/>
+                            <div class="vc-pages"><span class="active">1</span><span>2</span><span>3</span><span>›</span></div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== CREATE VENDOR ========== -->
+                <t t-if="state.screen === 'vendor_create'">
+                    <div class="vc-card vc-form-card">
+                        <div class="vc-form-section">
+                            <div class="vc-form-section-title"><i class="fa fa-info-circle"/> Basic Information</div>
+                            <div class="vc-fields">
+                                <label>Vendor Name <span class="req">*</span><input t-model="state.vendorForm.name" placeholder="Enter legal entity name"/></label>
+                                <label>Vendor ID<input value="VND-AUTO-GEN" disabled="disabled"/></label>
+                                <label>Vendor Type <span class="req">*</span>
+                                    <select t-model="state.vendorForm.vendor_type">
+                                        <option value="">Select Type</option>
+                                        <option value="company">Company</option>
+                                        <option value="individual">Individual</option>
+                                        <option value="agency">Agency</option>
+                                    </select>
+                                </label>
+                                <label>Service Category <span class="req">*</span>
+                                    <select t-model="state.vendorForm.category">
+                                        <option value="">Select Category</option>
+                                        <option value="electrical">Electrical</option>
+                                        <option value="housekeeping">Housekeeping</option>
+                                        <option value="security">Security</option>
+                                        <option value="hvac">HVAC</option>
+                                        <option value="landscaping">Landscaping</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </label>
+                                <label>Registration Date<input t-model="state.vendorForm.registration_date"/></label>
+                                <label>Vendor Status<div class="mt-2"><span class="vc-pill vc-pill-warn">Pending Approval</span></div></label>
+                            </div>
+                        </div>
+                        <div class="vc-form-section">
+                            <div class="vc-form-section-title"><i class="fa fa-user"/> Contact Information</div>
+                            <div class="vc-fields">
+                                <label>Primary Contact Person <span class="req">*</span><input t-model="state.vendorForm.contact_person" placeholder="Full Name"/></label>
+                                <label>Designation<input t-model="state.vendorForm.designation" placeholder="e.g. Account Manager"/></label>
+                                <label>Mobile Number <span class="req">*</span><input t-model="state.vendorForm.phone" placeholder="+1 (555) 000-0000"/></label>
+                                <label>Email Address <span class="req">*</span><input t-model="state.vendorForm.email" placeholder="contact@vendor.com"/></label>
+                                <label>Alternate Contact<input t-model="state.vendorForm.alternate" placeholder="Optional phone number"/></label>
+                                <label>Website<input t-model="state.vendorForm.website" placeholder="https://www.vendor.com"/></label>
+                            </div>
+                        </div>
+                        <div class="vc-form-section">
+                            <div class="vc-form-section-title"><i class="fa fa-sticky-note-o"/> Additional Notes</div>
+                            <div class="vc-fields">
+                                <textarea class="full" t-model="state.vendorForm.remarks" placeholder="Enter any additional remarks, special considerations, or context regarding this vendor"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== CONTRACTOR CREATE ========== -->
+                <t t-if="state.screen === 'contractor_create'">
+                    <div class="vc-card vc-form-card">
+                        <div class="vc-form-section">
+                            <div class="vc-form-section-title"><i class="fa fa-wrench"/> Contractor Information</div>
+                            <div class="vc-fields">
+                                <label>Contractor Name <span class="req">*</span><input t-model="state.contractorForm.name" placeholder="Company / contractor name"/></label>
+                                <label>Contact Person <span class="req">*</span><input t-model="state.contractorForm.contact_person" placeholder="Full name"/></label>
+                                <label>Category
+                                    <select t-model="state.contractorForm.contractor_type">
+                                        <option value="civil">Civil</option>
+                                        <option value="electrical">Electrical</option>
+                                        <option value="mechanical">Mechanical</option>
+                                        <option value="security">Security</option>
+                                        <option value="facility">Facility</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </label>
+                                <label>Specialization<input t-model="state.contractorForm.work_category" placeholder="e.g. HVAC, Civil Works"/></label>
+                                <label>Phone<input t-model="state.contractorForm.phone"/></label>
+                                <label>Email<input t-model="state.contractorForm.email"/></label>
+                                <label>Site<input t-model="state.contractorForm.site" placeholder="Primary site"/></label>
+                                <label class="full">Notes<textarea t-model="state.contractorForm.remarks" placeholder="Remarks"/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== CONTRACT CREATE ========== -->
+                <t t-if="state.screen === 'contract_create'">
+                    <div class="vc-card vc-form-card">
+                        <div class="vc-form-section">
+                            <div class="vc-form-section-title"><i class="fa fa-file-text-o"/> Contract Details</div>
+                            <div class="vc-fields">
+                                <label>Contract Title <span class="req">*</span><input t-model="state.contractForm.name"/></label>
+                                <label>Type
+                                    <select t-model="state.contractForm.contract_type">
+                                        <option value="service">Service Contract</option>
+                                        <option value="amc">AMC</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </label>
+                                <label>Vendor ID (optional)<input t-model="state.contractForm.vendor_id" placeholder="Numeric vendor id"/></label>
+                                <label>Contractor ID (optional)<input t-model="state.contractForm.contractor_id" placeholder="Numeric contractor id"/></label>
+                                <label>Site<input t-model="state.contractForm.site"/></label>
+                                <label>Category<input t-model="state.contractForm.category"/></label>
+                                <label>Start Date <span class="req">*</span><input type="date" t-model="state.contractForm.date_start"/></label>
+                                <label>End Date <span class="req">*</span><input type="date" t-model="state.contractForm.date_end"/></label>
+                                <label>Amount<input type="number" t-model="state.contractForm.value"/></label>
+                                <label>Payment Terms<input t-model="state.contractForm.payment_terms"/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== WORKER CREATE ========== -->
+                <t t-if="state.screen === 'worker_create'">
+                    <div class="vc-card vc-form-card">
+                        <div class="vc-form-section">
+                            <div class="vc-form-section-title"><i class="fa fa-user-plus"/> Worker Information</div>
+                            <div class="vc-fields">
+                                <label>Full Name <span class="req">*</span><input t-model="state.workerForm.name"/></label>
+                                <label>Contractor ID <span class="req">*</span><input t-model="state.workerForm.contractor_id" placeholder="Numeric contractor id"/></label>
+                                <label>Skill / Trade<input t-model="state.workerForm.skill"/></label>
+                                <label>Job Designation<input t-model="state.workerForm.role"/></label>
+                                <label>Phone<input t-model="state.workerForm.phone"/></label>
+                                <label>Site <span class="req">*</span><input t-model="state.workerForm.site" placeholder="Assigned site"/></label>
+                                <label>Supervisor<input t-model="state.workerForm.supervisor"/></label>
+                                <label>Emergency Contact<input t-model="state.workerForm.emergency_contact"/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== DAILY PASS CREATE ========== -->
+                <t t-if="state.screen === 'pass_create'">
+                    <div class="vc-card vc-form-card">
+                        <div class="vc-form-section">
+                            <div class="vc-form-section-title"><i class="fa fa-ticket"/> Daily Pass</div>
+                            <div class="vc-fields">
+                                <label>Visitor Name <span class="req">*</span><input t-model="state.passForm.visitor_name"/></label>
+                                <label>Company<input t-model="state.passForm.company"/></label>
+                                <label>Phone<input t-model="state.passForm.phone"/></label>
+                                <label>Site <span class="req">*</span><input t-model="state.passForm.site"/></label>
+                                <label>Purpose<input t-model="state.passForm.purpose"/></label>
+                                <label>Validity Date<input type="date" t-model="state.passForm.validity_date"/></label>
+                                <label>Pass Type
+                                    <select t-model="state.passForm.pass_type">
+                                        <option value="temporary">Temporary</option>
+                                        <option value="visitor">Visitor</option>
+                                        <option value="emergency">Emergency</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== PTW CREATE ========== -->
+                <t t-if="state.screen === 'ptw_create'">
+                    <div class="vc-card vc-form-card">
+                        <div class="vc-form-section">
+                            <div class="vc-form-section-title"><i class="fa fa-check-square-o"/> Permit to Work</div>
+                            <div class="vc-fields">
+                                <label>Work Activity <span class="req">*</span><input t-model="state.ptwForm.work_activity"/></label>
+                                <label>Permit Type
+                                    <select t-model="state.ptwForm.permit_type">
+                                        <option value="general">General Work</option>
+                                        <option value="hot_work">Hot Work</option>
+                                        <option value="cold_work">Cold Work</option>
+                                        <option value="electrical">Electrical</option>
+                                        <option value="height">Height Work</option>
+                                        <option value="confined">Confined Space</option>
+                                        <option value="excavation">Excavation</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </label>
+                                <label>Contractor ID<input t-model="state.ptwForm.contractor_id" placeholder="Numeric contractor id"/></label>
+                                <label>Vendor ID<input t-model="state.ptwForm.vendor_id" placeholder="Numeric vendor id"/></label>
+                                <label>Site<input t-model="state.ptwForm.site"/></label>
+                                <label>Work Area<input t-model="state.ptwForm.location"/></label>
+                                <label>Risk Level
+                                    <select t-model="state.ptwForm.risk_level">
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="critical">Critical</option>
+                                    </select>
+                                </label>
+                                <label>Validity Date<input type="date" t-model="state.ptwForm.validity_date"/></label>
+                                <label class="full">Safety Checklist <span class="req">*</span><textarea t-model="state.ptwForm.safety_checklist"/></label>
+                                <label class="full">PPE Checklist<textarea t-model="state.ptwForm.ppe_checklist"/></label>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== VENDOR DETAIL ========== -->
+                <t t-if="state.screen === 'vendor_detail' and state.selectedVendor">
+                    <div class="vc-detail-head">
+                        <span class="vc-pill vc-pill-ok">Active</span>
+                        <span t-att-class="badgeClass(state.selectedVendor.complianceKey)" t-esc="state.selectedVendor.compliance"/>
+                    </div>
+                    <div class="vc-tabs">
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'overview'}" t-on-click="() => state.vendorTab = 'overview'">Overview</button>
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'contracts'}" t-on-click="() => state.vendorTab = 'contracts'">Contracts &amp; AMC</button>
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'documents'}" t-on-click="() => state.vendorTab = 'documents'">Documents</button>
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'compliance'}" t-on-click="() => state.vendorTab = 'compliance'">Compliance</button>
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'performance'}" t-on-click="() => state.vendorTab = 'performance'">Performance</button>
+                        <button type="button" t-att-class="{'active': state.vendorTab === 'activity'}" t-on-click="() => state.vendorTab = 'activity'">Activity</button>
+                    </div>
+                    <div class="vc-kpi-row vc-kpi-4">
+                        <div class="vc-kpi"><div class="label">Contract Status</div><div class="value" style="font-size:18px" t-esc="state.selectedVendor.contract"/></div>
+                        <div class="vc-kpi tone-ok"><div class="label">Compliance</div><div class="value ok">100%</div></div>
+                        <div class="vc-kpi tone-warn"><div class="label">Open Issues</div><div class="value warn">2</div></div>
+                        <div class="vc-kpi"><div class="label">Performance</div><div class="value"><t t-esc="state.selectedVendor.rating"/>/5</div></div>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-stack">
+                            <div class="vc-card">
+                                <h3>Business Information</h3>
+                                <div class="vc-kv"><span>Vendor ID</span><strong t-esc="state.selectedVendor.code"/></div>
+                                <div class="vc-kv"><span>Legal Name</span><strong t-esc="state.selectedVendor.name"/></div>
+                                <div class="vc-kv"><span>Category</span><strong t-esc="state.selectedVendor.category"/></div>
+                                <div class="vc-kv"><span>Contact Person</span><strong t-esc="state.selectedVendor.contact"/></div>
+                                <div class="vc-kv"><span>Assigned Site</span><strong t-esc="state.selectedVendor.site"/></div>
+                            </div>
+                            <div class="vc-card">
+                                <h3>Service Details</h3>
+                                <div class="vc-kv"><span>Category</span><strong t-esc="state.selectedVendor.category"/></div>
+                                <div class="vc-kv"><span>Approved Services</span><strong>Maintenance, Panel Work, Lighting, Emergency Response</strong></div>
+                            </div>
+                        </div>
+                        <div class="vc-stack">
+                            <div class="vc-alert-item danger"><strong>Attention Required</strong><div>Labour Compliance document expires in 12 days.</div><span class="vc-link">Request Update</span></div>
+                            <div class="vc-card">
+                                <h3>Compliance Checklist</h3>
+                                <ul class="vc-check-list">
+                                    <li class="ok">Registration Docs</li>
+                                    <li class="ok">Tax Certificates</li>
+                                    <li class="ok">Safety Manuals</li>
+                                    <li class="warn">Labour License (Expiring)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== CONTRACTORS ========== -->
+                <t t-if="state.screen === 'contractors'">
+                    <div class="vc-kpi-row vc-kpi-4">
+                        <t t-foreach="d.contractors.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-card">
+                        <div class="vc-toolbar">
+                            <input class="vc-search" placeholder="Search contractors..." t-model="state.search"/>
+                            <button type="button" class="vc-filter">Status</button>
+                            <button type="button" class="vc-filter">Type</button>
+                            <button type="button" class="vc-filter">Site</button>
+                        </div>
+                        <div class="vc-table-wrap">
+                            <table class="vc-table">
+                                <thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Category</th><th>Contact</th><th>Site</th><th>Workers</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    <t t-foreach="contractorRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td class="name" t-esc="row.name"/>
+                                            <td t-esc="row.type"/><td t-esc="row.category"/><td t-esc="row.contact"/><td t-esc="row.site"/><td t-esc="row.workers"/>
+                                            <td><span t-att-class="badgeClass(row.stateKey)" t-esc="row.state"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== CONTRACTS ========== -->
+                <t t-if="state.screen === 'contracts'">
+                    <div class="vc-kpi-row vc-kpi-4">
+                        <t t-foreach="d.contracts.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                                <div class="hint" t-att-class="k.tone" t-esc="k.hint"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-card">
+                        <div class="vc-toolbar">
+                            <input class="vc-search" placeholder="Search contracts..." t-model="state.search"/>
+                            <button type="button" class="vc-filter">Type</button>
+                            <button type="button" class="vc-filter">Vendor</button>
+                            <button type="button" class="vc-filter">Status</button>
+                            <button type="button" class="vc-filter">Expiry</button>
+                            <button type="button" class="vc-filter">AMC/SLA</button>
+                            <button type="button" class="vc-clear">Clear All</button>
+                        </div>
+                        <div class="vc-table-wrap">
+                            <table class="vc-table">
+                                <thead>
+                                    <tr>
+                                        <th><input class="vc-check" type="checkbox"/></th>
+                                        <th>Contract ID</th><th>Vendor / Contractor</th><th>Type &amp; Site</th><th>Duration</th><th>AMC / SLA</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="contractRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td><input class="vc-check" type="checkbox"/></td>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td>
+                                                <div class="vc-party">
+                                                    <div class="vc-avatar-sm" t-esc="row.avatar"/>
+                                                    <div><div class="name" t-esc="row.party"/><span class="sub" t-esc="row.category"/></div>
+                                                </div>
+                                            </td>
+                                            <td><div t-esc="row.type"/><span class="sub" t-esc="row.site"/></td>
+                                            <td><div t-esc="row.start"/> → <span t-att-class="row.endTone ? ('tone-' + row.endTone) : ''" t-esc="row.end"/></td>
+                                            <td><div><span class="vc-pill vc-pill-info" t-esc="row.amc"/></div><span class="sub" t-esc="row.sla"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="vc-footer-row">
+                            <span t-esc="d.contracts.pageInfo"/>
+                            <div class="vc-pages"><span class="active">1</span><span>2</span><span>3</span></div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== WORKFORCE ========== -->
+                <t t-if="state.screen === 'workforce'">
+                    <div class="vc-kpi-row vc-kpi-5">
+                        <t t-foreach="d.workforce.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-card">
+                            <div class="vc-toolbar">
+                                <input class="vc-search" placeholder="Search worker name, ID, vendor..." t-model="state.search"/>
+                                <button type="button" class="vc-filter">Vendor / Contractor</button>
+                                <button type="button" class="vc-filter">Site / Facility</button>
+                                <button type="button" class="vc-filter">Skill / Trade</button>
+                                <button type="button" class="vc-filter">Status</button>
+                                <button type="button" class="vc-filter">Document Status</button>
+                            </div>
+                            <div class="vc-table-wrap">
+                                <table class="vc-table">
+                                    <thead><tr><th>Worker ID</th><th>Worker Name</th><th>Vendor / Contractor</th><th>Skill / Trade</th><th>Status</th><th>Document Status</th></tr></thead>
+                                    <tbody>
+                                        <t t-foreach="workforceRows" t-as="row" t-key="row.code">
+                                            <tr>
+                                                <td class="code-link" t-esc="row.code"/>
+                                                <td class="name" t-esc="row.name"/>
+                                                <td t-esc="row.contractor"/><td t-esc="row.skill"/>
+                                                <td><span t-att-class="badgeClass(row.stateKey)" t-esc="row.state"/></td>
+                                                <td><span t-att-class="badgeClass(row.docKey)" t-esc="row.doc"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="vc-footer-row"><span t-esc="d.workforce.pageInfo"/></div>
+                        </div>
+                        <div class="vc-card">
+                            <h3>Workforce Alerts</h3>
+                            <t t-foreach="d.workforce.alerts" t-as="a" t-key="a_index">
+                                <div class="vc-alert-item" t-att-class="a.tone">
+                                    <strong t-esc="a.title"/><div t-esc="a.text"/>
+                                    <span class="vc-link" t-esc="a.action"/>
+                                </div>
+                            </t>
+                            <div class="vc-footer-row" style="justify-content:center"><span class="vc-link">View All Alerts</span></div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== ATTENDANCE ========== -->
+                <t t-if="state.screen === 'attendance'">
+                    <div class="vc-kpi-row vc-kpi-6">
+                        <t t-foreach="d.attendance.kpis" t-as="k" t-key="k.label">
+                            <div t-attf-class="vc-kpi {{k.accent ? 'accent' : ''}} {{k.tone ? 'tone-' + k.tone : ''}}">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-card">
+                            <div class="vc-toolbar">
+                                <input class="vc-search" placeholder="Search workers, IDs, vendors..." t-model="state.search"/>
+                                <button type="button" class="vc-filter">Date</button>
+                                <button type="button" class="vc-filter">Location</button>
+                            </div>
+                            <div class="vc-table-wrap">
+                                <table class="vc-table">
+                                    <thead><tr><th>Worker ID</th><th>Worker Name</th><th>Vendor/Contractor</th><th>Check-In</th><th>Check-Out</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        <t t-foreach="attendanceRows" t-as="row" t-key="row.code">
+                                            <tr>
+                                                <td class="code-link" t-esc="row.code"/>
+                                                <td class="name" t-esc="row.name"/>
+                                                <td t-esc="row.contractor"/>
+                                                <td t-att-class="row.checkIn === 'Denied' ? 'tone-bad' : ''" t-esc="row.checkIn"/>
+                                                <td t-esc="row.checkOut"/>
+                                                <td><span t-att-class="badgeClass(row.stateKey)" t-esc="row.state"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="vc-stack">
+                            <div class="vc-card">
+                                <h3>Access Overview</h3>
+                                <t t-foreach="d.attendance.overview" t-as="o" t-key="o.label">
+                                    <div class="vc-kv"><span t-esc="o.label"/><strong t-esc="o.value"/></div>
+                                </t>
+                            </div>
+                            <div class="vc-card">
+                                <div class="vc-card-head"><h3>Attendance Alerts</h3><span class="vc-badge-count">26</span></div>
+                                <t t-foreach="d.attendance.alerts" t-as="a" t-key="a_index">
+                                    <div class="vc-alert-item" t-att-class="a.tone"><strong t-esc="a.title"/><div t-esc="a.text"/></div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== DAILY PASS ========== -->
+                <t t-if="state.screen === 'passes'">
+                    <div class="vc-kpi-row vc-kpi-5">
+                        <t t-foreach="d.passes.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-card">
+                            <div class="vc-toolbar">
+                                <input class="vc-search" placeholder="Search pass number, worker name..." t-model="state.search"/>
+                                <button type="button" class="vc-filter">Date</button>
+                                <button type="button" class="vc-filter">Site/Facility</button>
+                                <button type="button" class="vc-filter">Status</button>
+                            </div>
+                            <div class="vc-table-wrap">
+                                <table class="vc-table">
+                                    <thead><tr><th>Pass No.</th><th>Worker / Vendor</th><th>Site &amp; Purpose</th><th>Validity</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        <t t-foreach="passRows" t-as="row" t-key="row.code">
+                                            <tr>
+                                                <td class="code-link" t-esc="row.code"/>
+                                                <td><div class="name" t-esc="row.worker"/><span class="sub" t-esc="row.company"/></td>
+                                                <td><div t-esc="row.site"/><span class="sub" t-esc="row.purpose"/></td>
+                                                <td><div t-esc="row.validity"/><span class="sub" t-esc="row.type"/></td>
+                                                <td><span t-att-class="badgeClass(row.stateKey)" t-esc="row.state"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="vc-footer-row"><span t-esc="d.passes.pageInfo"/></div>
+                        </div>
+                        <div class="vc-card">
+                            <h3>Attention Required</h3>
+                            <t t-foreach="d.passes.alerts" t-as="a" t-key="a_index">
+                                <div class="vc-alert-item" t-att-class="a.tone"><strong t-esc="a.title"/><div t-esc="a.text"/></div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== PTW ========== -->
+                <t t-if="state.screen === 'ptw'">
+                    <div class="vc-kpi-row vc-kpi-6">
+                        <t t-foreach="d.ptw.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-card">
+                            <div class="vc-toolbar">
+                                <input class="vc-search" placeholder="Search permits..." t-model="state.search"/>
+                                <button type="button" class="vc-filter">Filters</button>
+                            </div>
+                            <div class="vc-table-wrap">
+                                <table class="vc-table">
+                                    <thead><tr><th>Permit No.</th><th>Work Activity</th><th>Vendor / Contractor</th><th>Site</th><th>Risk Level</th><th>Validity</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        <t t-foreach="ptwRows" t-as="row" t-key="row.code">
+                                            <tr>
+                                                <td class="code-link" t-esc="row.code"/>
+                                                <td><div class="name" t-esc="row.activity"/><span class="sub" t-esc="row.sub"/></td>
+                                                <td t-esc="row.party"/><td t-esc="row.site"/>
+                                                <td><span t-att-class="badgeClass(row.riskKey)" t-esc="row.risk"/></td>
+                                                <td t-esc="row.validity"/>
+                                                <td><span t-att-class="badgeClass(row.stateKey)" t-esc="row.state"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="vc-footer-row"><span t-esc="d.ptw.pageInfo"/></div>
+                        </div>
+                        <div class="vc-stack">
+                            <div class="vc-card attention-card">
+                                <h3>Attention Required</h3>
+                                <t t-foreach="d.ptw.alerts" t-as="a" t-key="a_index">
+                                    <div class="vc-alert-item warn"><div t-esc="a.text"/></div>
+                                </t>
+                                <button type="button" class="vc-btn vc-btn-primary" style="width:100%;justify-content:center">Review All</button>
+                            </div>
+                            <div class="vc-card">
+                                <h3>Active Permit Overview</h3>
+                                <t t-foreach="d.ptw.overview" t-as="o" t-key="o.label">
+                                    <div class="vc-progress">
+                                        <div class="label"><span t-esc="o.label"/><strong t-esc="o.value"/></div>
+                                        <div class="track"><div class="fill" t-att-class="o.tone" t-att-style="'width:' + o.pct + '%'"/></div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== DOCUMENTS ========== -->
+                <t t-if="state.screen === 'documents'">
+                    <div class="vc-kpi-row vc-kpi-5">
+                        <t t-foreach="d.documents.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-card">
+                        <div class="vc-toolbar">
+                            <input class="vc-search" placeholder="Search documents, vendors, contractors..." t-model="state.search"/>
+                            <button type="button" class="vc-filter">Document Type</button>
+                            <button type="button" class="vc-filter">Vendor/Contractor</button>
+                            <button type="button" class="vc-filter">Site/Facility</button>
+                            <button type="button" class="vc-filter">Verification Status</button>
+                            <button type="button" class="vc-filter">Expiry Status</button>
+                        </div>
+                        <div class="vc-table-wrap">
+                            <table class="vc-table">
+                                <thead><tr><th>Document ID</th><th>Document Name</th><th>Vendor / Contractor</th><th>Site</th><th>Expiry Date</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    <t t-foreach="documentRows" t-as="row" t-key="row.code">
+                                        <tr>
+                                            <td class="code-link" t-esc="row.code"/>
+                                            <td><div class="name" t-esc="row.name"/><span class="sub" t-esc="row.type"/></td>
+                                            <td t-esc="row.party"/><td t-esc="row.site"/><td t-esc="row.expiry"/>
+                                            <td><span t-att-class="badgeClass(row.stateKey)" t-esc="row.state"/> / <t t-esc="row.compliance"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== PERFORMANCE ========== -->
+                <t t-if="state.screen === 'performance'">
+                    <div class="vc-kpi-row vc-kpi-4">
+                        <t t-foreach="d.performance.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi"><div class="label" t-esc="k.label"/><div class="value" t-esc="k.value"/></div>
+                        </t>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-card">
+                            <h3>Performance Overview</h3>
+                            <div class="vc-table-wrap">
+                                <table class="vc-table">
+                                    <thead><tr><th>Vendor / Contractor</th><th>SLA</th><th>Quality</th><th>Overall</th><th>Band</th></tr></thead>
+                                    <tbody>
+                                        <t t-foreach="d.performance.rows" t-as="row" t-key="row.name">
+                                            <tr>
+                                                <td class="name" t-esc="row.name"/>
+                                                <td t-esc="row.sla"/><td t-esc="row.quality"/><td t-esc="row.overall"/>
+                                                <td><span t-att-class="badgeClass(row.bandKey)" t-esc="row.band"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h3 class="mt-3">SLA Performance Breakdown</h3>
+                            <t t-foreach="d.performance.slaBars" t-as="bar" t-key="bar.label">
+                                <div class="vc-progress">
+                                    <div class="label"><span t-esc="bar.label"/><span t-esc="bar.value + '%'"/> </div>
+                                    <div class="track"><div class="fill" t-att-style="'width:' + bar.value + '%'"/></div>
+                                </div>
+                            </t>
+                        </div>
+                        <div class="vc-card" style="background:#fff5f5;border-color:#fecaca">
+                            <h3>Attention Required</h3>
+                            <t t-foreach="d.performance.alerts" t-as="a" t-key="a_index">
+                                <div class="vc-alert-item danger"><strong t-esc="a.title"/><div t-esc="a.text"/></div>
+                            </t>
+                            <button type="button" class="vc-btn vc-btn-danger-soft mt-2">Review Critical Items</button>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== REPORTS ========== -->
+                <t t-if="state.screen === 'reports'">
+                    <div class="vc-kpi-row vc-kpi-4">
+                        <t t-foreach="d.reports.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                        <div class="vc-kpi"><div class="label">Export Formats</div><div class="value" style="font-size:16px">PDF / Excel / CSV</div></div>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-card">
+                            <div class="vc-chips">
+                                <t t-foreach="d.reports.categories" t-as="c" t-key="c">
+                                    <span t-att-class="{'active': c_index === 0}" t-esc="c"/>
+                                </t>
+                            </div>
+                            <div class="vc-table-wrap">
+                                <table class="vc-table">
+                                    <thead><tr><th>Report Name</th><th>Category</th><th>Last Generated</th><th>Generated By</th><th>Format</th></tr></thead>
+                                    <tbody>
+                                        <t t-foreach="d.reports.rows" t-as="row" t-key="row.name">
+                                            <tr>
+                                                <td class="name" t-esc="row.name"/><td t-esc="row.category"/><td t-esc="row.generated"/><td t-esc="row.by"/><td t-esc="row.format"/>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="vc-card">
+                            <h3>Recent Activity</h3>
+                            <t t-foreach="d.reports.activity" t-as="a" t-key="a.name">
+                                <div class="vc-kv"><span t-esc="a.name"/><span t-att-class="badgeClass(a.statusKey)" t-esc="a.status"/></div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== AUDIT ========== -->
+                <t t-if="state.screen === 'audit'">
+                    <div class="vc-kpi-row vc-kpi-4">
+                        <t t-foreach="d.audit.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-layout-main-side">
+                        <div class="vc-card">
+                            <div class="vc-table-wrap">
+                                <table class="vc-table">
+                                    <thead><tr><th>Date &amp; Time</th><th>User</th><th>Module</th><th>Activity</th><th>Record</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        <t t-foreach="d.audit.rows" t-as="row" t-key="row_index">
+                                            <tr>
+                                                <td t-esc="row.when"/><td t-esc="row.user"/><td t-esc="row.module"/><td t-esc="row.activity"/><td t-esc="row.record"/>
+                                                <td><span t-att-class="badgeClass(row.statusKey)" t-esc="row.status"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="vc-card">
+                            <h3>Critical Activity Feed</h3>
+                            <t t-foreach="d.audit.critical" t-as="c" t-key="c_index">
+                                <div class="vc-alert-item danger"><strong t-esc="c.title"/><div t-esc="c.text"/></div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== NOTIFICATIONS ========== -->
+                <t t-if="state.screen === 'notifications'">
+                    <div class="vc-kpi-row vc-kpi-4">
+                        <t t-foreach="d.notifications.kpis" t-as="k" t-key="k.label">
+                            <div class="vc-kpi" t-att-class="k.tone ? ('tone-' + k.tone) : ''">
+                                <div class="label" t-esc="k.label"/>
+                                <div class="value" t-att-class="k.tone" t-esc="k.value"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="vc-card">
+                        <div class="vc-toolbar">
+                            <input class="vc-search" placeholder="Filter notifications..."/>
+                            <button type="button" class="vc-filter">Type</button>
+                            <button type="button" class="vc-filter">Priority</button>
+                            <button type="button" class="vc-filter">Status</button>
+                            <button type="button" class="vc-btn">Mark All as Read</button>
+                        </div>
+                        <div class="vc-table-wrap">
+                            <table class="vc-table">
+                                <thead><tr><th>Notification</th><th>Related Record</th><th>Priority</th><th>Date/Time</th></tr></thead>
+                                <tbody>
+                                    <t t-foreach="d.notifications.rows" t-as="row" t-key="row_index">
+                                        <tr>
+                                            <td><div class="name" t-esc="row.title"/><span class="sub" t-esc="row.text"/></td>
+                                            <td class="code-link" t-esc="row.record"/>
+                                            <td><span t-att-class="badgeClass(row.priorityKey)" t-esc="row.priority"/></td>
+                                            <td t-esc="row.when"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ========== SETTINGS ========== -->
+                <t t-if="state.screen === 'settings'">
+                    <div class="vc-card vc-settings">
+                        <h3>General Settings</h3>
+                        <div class="vc-fields">
+                            <label>Organization / Company<input value="Acme Global Corporation"/></label>
+                            <label>Facility / Site (Default)<input t-att-value="d.facility"/></label>
+                            <label>Language<input value="English (US)"/></label>
+                            <label>Timezone<input value="(UTC+05:30) India Standard Time"/></label>
+                            <label>Date Format<input value="MM/DD/YYYY"/></label>
+                        </div>
+                        <div class="vc-page-actions mt-3">
+                            <button type="button" class="vc-btn">Reset to Default</button>
+                            <button type="button" class="vc-btn vc-btn-primary">Save Changes</button>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </div>
+</t>
+</templates>

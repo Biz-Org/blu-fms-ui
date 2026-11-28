@@ -1,0 +1,39 @@
+@media (max-width: 1280px) {
+    .o_wm_app {
+        .wm-kpi-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .wm-kpi-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .wm-layout-main-side, .wm-layout-2 { grid-template-columns: 1fr; }
+        .wm-top-center { display: none; }
+        .wm-settings-grid { grid-template-columns: 1fr; }
+    }
+}
+
+@media (max-width: 992px) {
+    .o_wm_app {
+        .wm-menu-btn { display: grid; }
+        .wm-sidebar {
+            position: fixed;
+            left: 0;
+            top: 46px;
+            transform: translateX(-105%);
+            transition: transform 0.2s ease;
+            box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
+            background: #fff;
+        }
+        .wm-sidebar.is-open { transform: translateX(0); }
+        .wm-site-wrap .wm-site-chip:nth-child(2),
+        .wm-switch-btn { display: none; }
+        .wm-page-head { flex-direction: column; }
+        .wm-fields { grid-template-columns: 1fr; }
+        .wm-kpi-4, .wm-kpi-5, .wm-kpi-6 { grid-template-columns: 1fr 1fr; }
+        .wm-steps { flex-wrap: wrap; }
+        .wm-step { min-width: 40%; border-bottom: 1px solid var(--wm-border); }
+    }
+}
+
+@media (max-width: 640px) {
+    .o_wm_app {
+        .wm-content { padding: 12px; }
+        .wm-page-head h1 { font-size: 20px; }
+    }
+}
